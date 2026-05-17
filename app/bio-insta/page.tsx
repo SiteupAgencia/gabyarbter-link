@@ -16,10 +16,10 @@ import {
 import { cn } from "@/lib/utils";
 
 // URLs reais (extraídas do Linktree atual em 2026-05-16).
-// Quando o Sopro for pro ar, trocar URL_SOPRO pelo domínio dele.
+// Quando o Sopro for pro ar, trocar URL_YOGA pelo domínio dele.
 const URL_YOUTUBE_AULA = "https://youtu.be/qh38626wbY0?si=lt53dj3pAlutrqst";
 const URL_AGENDAR_MAQUIAGEM = "https://client.tuaagenda.com/c/Gabyarbtermk";
-const URL_SOPRO = "https://wa.me/message/E6RZKY2Y72LEB1"; // TODO: trocar pra URL do app Sopro quando deployar
+const URL_YOGA = "/yoga"; // landing dedicada — leva pro cadastro do Sopro
 const URL_CURSO_AUTOMAQUIAGEM = "https://pay.hotmart.com/Y79914073O";
 
 const URL_INSTAGRAM = "https://www.instagram.com/gabyarbter/";
@@ -120,7 +120,7 @@ function Cards() {
         tone="primary"
       />
       <PortaCard
-        href={URL_SOPRO}
+        href={URL_YOGA}
         icon={<Lotus className="size-5" />}
         title="Aulas de yoga em Erechim"
         subtitle="Pratique semanal com a gente"
@@ -152,11 +152,13 @@ function PortaCard({
   subtitle: string;
   tone?: Tone;
 }) {
+  // Links internos (começam com /) abrem na mesma aba; externos em nova.
+  const isExternal = href.startsWith("http");
   return (
     <Link
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener noreferrer" : undefined}
       className={cn(
         "group flex items-center gap-4 rounded-2xl px-5 py-4 border transition-all active:scale-[0.99]",
         tone === "soft" &&
@@ -235,9 +237,7 @@ function SobreYoga() {
           Quem vem, volta — e depois traz uma amiga.
         </p>
         <Link
-          href={URL_SOPRO}
-          target="_blank"
-          rel="noopener noreferrer"
+          href={URL_YOGA}
           className="mt-4 inline-flex items-center gap-1.5 text-sage-700 font-medium text-sm hover:gap-2 transition-all"
         >
           Conhecer as aulas <ArrowUpRight className="size-3.5" />
