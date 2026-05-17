@@ -1,26 +1,88 @@
 @import "tailwindcss";
 
+/* =========================================================
+   Gaby Arbter — paleta + tokens
+   Princípio: cream quente, sage profundo, terracota suave.
+   Sem dark mode (a marca vive em luz natural).
+   ========================================================= */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* base */
+  --cream: #f7f1e5;
+  --cream-soft: #faf5ea;
+  --sand: #ece2cc;
+  --sand-deep: #ddcfb1;
+
+  /* texto */
+  --ink: #2a2a26;
+  --ink-soft: #6b6b62;
+  --ink-mute: #9c9c91;
+
+  /* primária - sage (alinha com Sopro) */
+  --sage-50: #f0f3ed;
+  --sage-100: #dde4d4;
+  --sage-200: #b5c2a8;
+  --sage-500: #7a8d6b;
+  --sage-600: #6d8060;
+  --sage-700: #5c7050;
+  --sage-900: #2f3a27;
+
+  /* accent - terracota */
+  --terra: #b87355;
+  --terra-soft: #d9a690;
+
+  /* warm white pra cards */
+  --paper: #ffffff;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-cream: var(--cream);
+  --color-cream-soft: var(--cream-soft);
+  --color-sand: var(--sand);
+  --color-sand-deep: var(--sand-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-mute: var(--ink-mute);
+  --color-sage-50: var(--sage-50);
+  --color-sage-100: var(--sage-100);
+  --color-sage-200: var(--sage-200);
+  --color-sage-500: var(--sage-500);
+  --color-sage-600: var(--sage-600);
+  --color-sage-700: var(--sage-700);
+  --color-sage-900: var(--sage-900);
+  --color-terra: var(--terra);
+  --color-terra-soft: var(--terra-soft);
+  --color-paper: var(--paper);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-serif: var(--font-serif-display);
+  --font-sans: var(--font-sans-body);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-sans-body), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* sutileza: respirar */
+@keyframes breathe-soft {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.015); opacity: 0.95; }
+}
+.breathe-soft {
+  animation: breathe-soft 7s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fade-up 0.6s ease-out backwards;
+}
+
+/* safe-area pra notch iOS quando virar PWA */
+.safe-top    { padding-top:    env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }

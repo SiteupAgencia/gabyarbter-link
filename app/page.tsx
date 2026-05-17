@@ -1,65 +1,312 @@
-import Image from "next/image";
+import Link from "next/link";
+import {
+  PlayCircle,
+  Sparkles,
+  GraduationCap,
+  MapPin,
+  ArrowUpRight,
+} from "lucide-react";
+import { Lotus } from "@/components/lotus";
+import {
+  InstagramIcon,
+  YoutubeIcon,
+  WhatsappIcon,
+} from "@/components/brand-icons";
+import { cn } from "@/lib/utils";
+
+// URLs reais (extraídas do Linktree atual em 2026-05-16).
+// Quando o Sopro for pro ar, trocar URL_SOPRO pelo domínio dele.
+const URL_YOUTUBE_AULA = "https://youtu.be/qh38626wbY0?si=lt53dj3pAlutrqst";
+const URL_AGENDAR_MAQUIAGEM = "https://client.tuaagenda.com/c/Gabyarbtermk";
+const URL_SOPRO = "https://wa.me/message/E6RZKY2Y72LEB1"; // TODO: trocar pra URL do app Sopro quando deployar
+const URL_CURSO_AUTOMAQUIAGEM = "https://pay.hotmart.com/Y79914073O";
+
+const URL_INSTAGRAM = "https://www.instagram.com/gabyarbter/";
+const URL_WHATSAPP = "https://wa.me/message/E6RZKY2Y72LEB1";
+const URL_YOUTUBE_CANAL = "https://www.youtube.com/@gabyarbter";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="min-h-dvh safe-top safe-bottom flex flex-col items-center px-5 py-10 relative overflow-hidden">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 size-[520px] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle at center, rgba(184,115,85,0.10) 0%, rgba(184,115,85,0.03) 40%, transparent 70%)",
+        }}
+      />
+
+      <div className="w-full max-w-md space-y-10 relative">
+        <Hero />
+        <Cards />
+        <SobreYoga />
+        <SobreGaby />
+        <Footer />
+      </div>
+    </main>
+  );
+}
+
+/* ============================================
+   HERO — foto + nome + tagline
+   ============================================ */
+function Hero() {
+  return (
+    <header className="text-center fade-up">
+      <div className="relative w-32 h-32 mx-auto mb-5">
+        <div
+          aria-hidden
+          className="absolute inset-0 rounded-full bg-sand-deep/40 breathe-soft"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        <div className="absolute inset-1 rounded-full overflow-hidden bg-sand">
+          {/* Quando tiver foto, troca esse div por:
+              <Image src="/photos/avatar.jpg" alt="Gaby Arbter" fill className="object-cover" /> */}
+          <div className="w-full h-full flex items-center justify-center">
+            <Lotus className="size-14 text-sage-600" />
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </div>
+
+      <h1 className="font-serif text-5xl text-ink leading-none tracking-tight">
+        Gaby Arbter
+      </h1>
+
+      <p className="mt-5 text-[15px] text-ink-soft italic font-serif leading-snug max-w-xs mx-auto">
+        “Se vê beleza aqui, há tanta beleza aí, que é impossível não ver beleza em tudo.”
+      </p>
+
+      <div className="mt-5 flex flex-wrap justify-center gap-1.5">
+        {["Yoga", "Maquiagem", "Ayurveda", "Mãe"].map((t) => (
+          <span
+            key={t}
+            className="text-[11px] uppercase tracking-[0.18em] text-ink-soft bg-paper border border-sand-deep/60 rounded-full px-2.5 py-1"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {t}
+          </span>
+        ))}
+      </div>
+
+      <p className="mt-4 text-xs text-ink-mute flex items-center justify-center gap-1">
+        <MapPin className="size-3" />
+        Erechim, RS
+      </p>
+    </header>
+  );
+}
+
+/* ============================================
+   CARDS — as 4 portas
+   ============================================ */
+function Cards() {
+  return (
+    <section className="space-y-3 fade-up" style={{ animationDelay: "120ms" }}>
+      <PortaCard
+        href={URL_YOUTUBE_AULA}
+        icon={<PlayCircle className="size-5" />}
+        title="Aula de yoga grátis"
+        subtitle="Pra iniciantes — acalma e renova"
+        tone="soft"
+      />
+      <PortaCard
+        href={URL_AGENDAR_MAQUIAGEM}
+        icon={<Sparkles className="size-5" />}
+        title="Agendar maquiagem"
+        subtitle="Veja disponibilidade na agenda"
+        tone="primary"
+      />
+      <PortaCard
+        href={URL_SOPRO}
+        icon={<Lotus className="size-5" />}
+        title="Aulas de yoga em Erechim"
+        subtitle="Pratique semanal com a gente"
+        tone="sage"
+      />
+      <PortaCard
+        href={URL_CURSO_AUTOMAQUIAGEM}
+        icon={<GraduationCap className="size-5" />}
+        title="Curso de automaquiagem"
+        subtitle="Aprenda a se maquiar com leveza"
+        tone="soft"
+      />
+    </section>
+  );
+}
+
+type Tone = "soft" | "primary" | "sage";
+
+function PortaCard({
+  href,
+  icon,
+  title,
+  subtitle,
+  tone = "soft",
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  tone?: Tone;
+}) {
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn(
+        "group flex items-center gap-4 rounded-2xl px-5 py-4 border transition-all active:scale-[0.99]",
+        tone === "soft" &&
+          "bg-paper border-sand-deep/40 hover:border-sage-200 hover:shadow-[0_8px_24px_-12px_rgba(122,141,107,0.25)]",
+        tone === "primary" &&
+          "bg-terra text-paper border-terra hover:bg-[#a3614a]",
+        tone === "sage" &&
+          "bg-sage-50 border-sage-100 hover:bg-sage-100/70 hover:border-sage-200"
+      )}
+    >
+      <div
+        className={cn(
+          "shrink-0 size-11 rounded-full flex items-center justify-center transition-colors",
+          tone === "soft" && "bg-sand text-sage-700",
+          tone === "primary" && "bg-paper/15 text-paper",
+          tone === "sage" && "bg-paper text-sage-700"
+        )}
+      >
+        {icon}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <p
+          className={cn(
+            "text-[15px] font-medium leading-tight",
+            tone === "primary" ? "text-paper" : "text-ink"
+          )}
+        >
+          {title}
+        </p>
+        <p
+          className={cn(
+            "text-[12px] mt-0.5 leading-tight",
+            tone === "primary" ? "text-paper/80" : "text-ink-soft"
+          )}
+        >
+          {subtitle}
+        </p>
+      </div>
+
+      <ArrowUpRight
+        className={cn(
+          "shrink-0 size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
+          tone === "primary" ? "text-paper/80" : "text-ink-mute"
+        )}
+      />
+    </Link>
+  );
+}
+
+/* ============================================
+   SOBRE YOGA — bloco extendido com foto
+   ============================================ */
+function SobreYoga() {
+  return (
+    <section
+      className="fade-up rounded-2xl overflow-hidden bg-paper border border-sand-deep/40"
+      style={{ animationDelay: "240ms" }}
+    >
+      <div className="relative aspect-[4/3] bg-sand">
+        {/* Quando tiver foto da turma:
+            <Image src="/photos/turma-yoga.jpg" alt="Turma de yoga ao ar livre" fill className="object-cover" /> */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <Lotus className="size-12 mx-auto text-sage-500 opacity-50" />
+            <p className="mt-3 text-xs text-ink-mute uppercase tracking-widest">
+              foto da turma · em breve
+            </p>
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+
+      <div className="p-6">
+        <h2 className="font-serif text-2xl text-ink leading-tight">
+          Yoga aqui é prática real
+        </h2>
+        <p className="mt-3 text-[14px] text-ink-soft leading-relaxed">
+          Aulas em Erechim. Pequenos grupos, presença antes de performance.
+          Quem vem, volta — e depois traz uma amiga.
+        </p>
+        <Link
+          href={URL_SOPRO}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex items-center gap-1.5 text-sage-700 font-medium text-sm hover:gap-2 transition-all"
+        >
+          Conhecer as aulas <ArrowUpRight className="size-3.5" />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================
+   SOBRE GABY — mini bio
+   ============================================ */
+function SobreGaby() {
+  return (
+    <section
+      className="fade-up text-center px-4"
+      style={{ animationDelay: "360ms" }}
+    >
+      <p className="font-serif italic text-ink-soft text-[15px] leading-relaxed">
+        Sou Gaby. Mãe, maquiadora, professora de yoga.
+        <br />
+        Tudo o que faço respira a mesma coisa:{" "}
+        <span className="text-ink">cuidado</span>.
+      </p>
+    </section>
+  );
+}
+
+/* ============================================
+   FOOTER — redes
+   ============================================ */
+function Footer() {
+  return (
+    <footer className="fade-up pt-6 pb-2" style={{ animationDelay: "480ms" }}>
+      <div className="flex items-center justify-center gap-3">
+        <SocialIcon href={URL_INSTAGRAM} label="Instagram">
+          <InstagramIcon className="size-4" />
+        </SocialIcon>
+        <SocialIcon href={URL_WHATSAPP} label="WhatsApp">
+          <WhatsappIcon className="size-4" />
+        </SocialIcon>
+        <SocialIcon href={URL_YOUTUBE_CANAL} label="YouTube">
+          <YoutubeIcon className="size-4" />
+        </SocialIcon>
+      </div>
+      <p className="mt-4 text-center text-[11px] text-ink-mute">
+        Erechim · RS
+      </p>
+    </footer>
+  );
+}
+
+function SocialIcon({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="size-10 rounded-full bg-paper border border-sand-deep/50 flex items-center justify-center text-ink-soft hover:text-sage-700 hover:border-sage-200 transition-colors"
+    >
+      {children}
+    </Link>
   );
 }
