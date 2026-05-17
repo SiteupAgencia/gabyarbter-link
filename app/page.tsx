@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   PlayCircle,
@@ -60,11 +61,14 @@ function Hero() {
           className="absolute inset-0 rounded-full bg-sand-deep/40 breathe-soft"
         />
         <div className="absolute inset-1 rounded-full overflow-hidden bg-sand">
-          {/* Quando tiver foto, troca esse div por:
-              <Image src="/photos/avatar.jpg" alt="Gaby Arbter" fill className="object-cover" /> */}
-          <div className="w-full h-full flex items-center justify-center">
-            <Lotus className="size-14 text-sage-600" />
-          </div>
+          <Image
+            src="/photos/avatar.jpg"
+            alt="Gaby Arbter"
+            fill
+            sizes="128px"
+            priority
+            className="object-cover object-[center_30%]"
+          />
         </div>
       </div>
 
@@ -212,17 +216,14 @@ function SobreYoga() {
       className="fade-up rounded-2xl overflow-hidden bg-paper border border-sand-deep/40"
       style={{ animationDelay: "240ms" }}
     >
-      <div className="relative aspect-[4/3] bg-sand">
-        {/* Quando tiver foto da turma:
-            <Image src="/photos/turma-yoga.jpg" alt="Turma de yoga ao ar livre" fill className="object-cover" /> */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <Lotus className="size-12 mx-auto text-sage-500 opacity-50" />
-            <p className="mt-3 text-xs text-ink-mute uppercase tracking-widest">
-              foto da turma · em breve
-            </p>
-          </div>
-        </div>
+      <div className="relative aspect-[3/4] bg-sand">
+        <Image
+          src="/photos/turma-yoga.jpg"
+          alt="Turma de yoga da Gaby em Erechim"
+          fill
+          sizes="(max-width: 480px) 100vw, 28rem"
+          className="object-cover"
+        />
       </div>
 
       <div className="p-6">
