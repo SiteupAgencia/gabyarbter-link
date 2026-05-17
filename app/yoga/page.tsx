@@ -147,15 +147,14 @@ function ComoEAula() {
         Sempre adaptada pra quem chegou, pro corpo do dia, pro momento.
       </p>
 
-      <div className="mt-8 relative aspect-[4/5] rounded-2xl overflow-hidden bg-sand">
-        <Image
-          src="/photos/aula-detalhe.jpg"
-          alt="Detalhe de uma prática de yoga"
-          fill
-          sizes="(max-width: 480px) 100vw, 28rem"
-          className="object-cover"
-        />
-      </div>
+      <Image
+        src="/photos/aula-detalhe.jpg"
+        alt="Detalhe de uma prática de yoga"
+        width={1400}
+        height={1750}
+        sizes="(max-width: 480px) 100vw, 28rem"
+        className="mt-8 rounded-2xl w-full h-auto bg-sand object-cover"
+      />
 
       <ul className="mt-8 space-y-4">
         <Feature
