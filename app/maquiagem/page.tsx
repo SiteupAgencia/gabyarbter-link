@@ -3,7 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Lotus } from "@/components/lotus";
 
-const BOOKING_URL = "/maquiagem/agendar";
+// MANTÉM TuaAgenda enquanto o /maquiagem/agendar interno está em
+// validação. Só trocar pra "/maquiagem/agendar" quando confirmar
+// que o novo fluxo está 100% testado e a Gaby aprovou.
+const BOOKING_URL = "https://client.tuaagenda.com/c/Gabyarbtermk/agendar/servicos";
 const WHATSAPP_URL = "https://wa.me/message/E6RZKY2Y72LEB1";
 const INSTAGRAM_URL = "https://www.instagram.com/gabyarbter/";
 
