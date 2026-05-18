@@ -11,9 +11,8 @@ import {
 import { Lotus } from "@/components/lotus";
 import { cn } from "@/lib/utils";
 
-// CTA leva pro cadastro do Sopro. Por enquanto cai no WhatsApp;
-// trocar URL_CADASTRO_SOPRO quando o app subir.
-const URL_CADASTRO_SOPRO = "https://wa.me/message/E6RZKY2Y72LEB1"; // TODO: pra Sopro
+// CTA leva pro cadastro do Sopro (app de yoga da Gaby).
+const URL_CADASTRO_SOPRO = "https://yoga-checkin.vercel.app/cadastro";
 const URL_WHATSAPP = "https://wa.me/message/E6RZKY2Y72LEB1";
 
 // Pacotes — confirmar com a Gaby se quer manter esse esquema de desconto
