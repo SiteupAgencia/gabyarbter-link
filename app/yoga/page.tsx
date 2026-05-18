@@ -18,10 +18,29 @@ const URL_WHATSAPP = "https://wa.me/message/E6RZKY2Y72LEB1";
 
 // Pacotes — confirmar com a Gaby se quer manter esse esquema de desconto
 // (1 aula avulsa, e descontos progressivos em 5 e 10).
-const PACOTES = [
-  { aulas: 1,  total: 35,  destaque: false },
-  { aulas: 5,  total: 160, destaque: true,  selo: "Mais escolhido" },
-  { aulas: 10, total: 300, destaque: false, selo: "Maior economia" },
+type Pacote = {
+  tipo: "avulsa" | "pacote" | "mensal";
+  label: string;
+  total: number;
+  porAula?: number;
+  aulas?: number;
+  bonus?: string;
+  selo?: string;
+  destaque?: boolean;
+};
+
+const PACOTES: Pacote[] = [
+  { tipo: "avulsa", label: "Aula avulsa",   total: 40, aulas: 1, porAula: 40 },
+  { tipo: "pacote", label: "Pacote 5 aulas", total: 180, aulas: 5, porAula: 36 },
+  { tipo: "pacote", label: "Pacote 10 aulas", total: 320, aulas: 10, porAula: 32 },
+  {
+    tipo: "mensal",
+    label: "Mensal Sopro",
+    total: 180,
+    bonus: "4 aulas + quartas ilimitadas · 35 dias",
+    destaque: true,
+    selo: "Mais escolhido",
+  },
 ];
 
 // Relatos — placeholder com nomes fictícios pra Gaby substituir
@@ -283,83 +302,93 @@ function Pacotes() {
           Pacotes
         </h2>
         <p className="mt-4 text-[15px] text-ink-soft leading-relaxed">
-          Avulsa ou em pacote — quanto mais aulas, menos custa cada uma.
-          Pagamento por PIX ou cartão.
+          Mensal pra quem vem toda semana. Pacote pra quem prefere prazo livre.
         </p>
 
         <div className="mt-8 space-y-4">
-          {PACOTES.map((p) => (
-            <PacoteCard key={p.aulas} {...p} />
+          {PACOTES.map((p, i) => (
+            <PacoteCard key={i} {...p} />
           ))}
         </div>
 
         <p className="mt-6 text-center text-[11px] text-ink-mute">
-          Os créditos ficam no app — você usa quando quiser, sem prazo curto.
+          Pacotes não expiram — você usa quando quiser.
+          <br />
+          Mensal vale 35 dias e dá quartas livres.
         </p>
       </div>
     </section>
   );
 }
 
-function PacoteCard({
-  aulas, total, destaque, selo,
-}: {
-  aulas: number;
-  total: number;
-  destaque?: boolean;
-  selo?: string;
-}) {
-  const porAula = (total / aulas).toFixed(0);
-  const desconto = aulas === 1 ? null : Math.round((1 - total / (aulas * 35)) * 100);
+function PacoteCard(p: Pacote) {
+  const isMensal = p.tipo === "mensal";
+  const desconto =
+    p.tipo === "pacote" && p.aulas && p.porAula
+      ? Math.round((1 - p.total / (p.aulas * 40)) * 100)
+      : null;
 
   return (
     <div
       className={cn(
         "relative rounded-2xl p-6 border transition-all",
-        destaque
+        p.destaque
           ? "bg-sage-700 text-paper border-sage-700 shadow-[0_12px_32px_-16px_rgba(92,112,80,0.45)]"
           : "bg-paper text-ink border-sand-deep/50 shadow-[0_4px_18px_-12px_rgba(60,60,55,0.18)]"
       )}
     >
-      {selo && (
+      {p.selo && (
         <span
           className={cn(
             "absolute -top-3 right-5 text-[9.5px] uppercase tracking-[0.18em] px-3 py-1 rounded-full font-medium",
-            destaque ? "bg-terra text-paper" : "bg-sand text-ink"
+            p.destaque ? "bg-terra text-paper" : "bg-sand text-ink"
           )}
         >
-          {selo}
+          {p.selo}
         </span>
       )}
 
       <div className="flex items-baseline justify-between gap-3">
-        <div>
-          <p className="font-serif text-2xl leading-none">
-            {aulas} {aulas === 1 ? "aula" : "aulas"}
-          </p>
+        <div className="min-w-0">
+          <p className="font-serif text-2xl leading-none">{p.label}</p>
           <p
             className={cn(
               "text-[12px] mt-1.5",
-              destaque ? "text-paper/80" : "text-ink-soft"
+              p.destaque ? "text-paper/80" : "text-ink-soft"
             )}
           >
-            R$ {porAula} <span className="opacity-70">por aula</span>
+            {isMensal
+              ? p.bonus
+              : p.aulas && p.porAula
+              ? `R$ ${p.porAula} por aula`
+              : ""}
           </p>
         </div>
 
-        <div className="text-right">
+        <div className="text-right shrink-0">
           <p className="font-serif text-4xl leading-none tracking-tight">
-            R$ {total}
+            R$ {p.total}
           </p>
-          {desconto !== null && desconto > 0 && (
+          {isMensal ? (
             <p
               className={cn(
                 "text-[10px] uppercase tracking-[0.18em] mt-1.5",
-                destaque ? "text-paper/70" : "text-terra"
+                p.destaque ? "text-paper/70" : "text-ink-mute"
               )}
             >
-              economia {desconto}%
+              /mês
             </p>
+          ) : (
+            desconto !== null && desconto > 0 && (
+              <p
+                className={cn(
+                  "text-[10px] uppercase tracking-[0.18em] mt-1.5",
+                  p.destaque ? "text-paper/70" : "text-terra"
+                )}
+              >
+                economia {desconto}%
+              </p>
+            )
           )}
         </div>
       </div>
