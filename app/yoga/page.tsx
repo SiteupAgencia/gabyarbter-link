@@ -7,7 +7,6 @@ import {
   Clock,
   Flower2,
   Quote,
-  Gift,
 } from "lucide-react";
 import { Lotus } from "@/components/lotus";
 import { cn } from "@/lib/utils";
@@ -58,10 +57,10 @@ export default function YogaPage() {
       <Hero />
       <Separador />
       <ComoEAula />
-      <FaixaBonus />
+      <Separador />
       <Relatos />
       <Pacotes />
-      <CtaMeio />
+      <ConviteSuave />
       <ComoAgendar />
       <CtaFinal />
       <FooterMini />
@@ -107,16 +106,16 @@ function Hero() {
           href={URL_CADASTRO_SOPRO}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 inline-flex items-center justify-center gap-2 h-12 px-7 py-3 rounded-full bg-terra text-paper font-medium text-[15px] shadow-[0_8px_24px_-8px_rgba(184,115,85,0.55)] hover:bg-[#a3614a] transition-colors active:scale-[0.98]"
+          className="mt-7 inline-flex items-center justify-center gap-2 h-11 px-7 rounded-full border border-paper/70 text-paper text-[14px] hover:bg-paper hover:text-ink transition-colors active:scale-[0.98]"
         >
-          <Gift className="size-4" />
-          Quero minha aula grátis
+          Vem experimentar
+          <ArrowRight className="size-3.5" />
         </Link>
-        <p className="mt-2.5 text-[11.5px] text-paper/75">
-          1ª aula de cortesia ao se cadastrar
+        <p className="mt-2.5 text-[11px] text-paper/65 italic">
+          a primeira aula fica por conta da casa
         </p>
 
-        <div className="mt-5 flex flex-wrap justify-center gap-1.5 text-[10.5px] uppercase tracking-[0.2em] opacity-85">
+        <div className="mt-6 flex flex-wrap justify-center gap-1.5 text-[10.5px] uppercase tracking-[0.2em] opacity-85">
           <Chip>Hatha</Chip>
           <Chip>Vinyasa</Chip>
           <Chip>Ashtanga</Chip>
@@ -177,7 +176,7 @@ function ComoEAula() {
         <Feature
           icon={<Users className="size-4" />}
           title="Pequenos grupos"
-          desc="Até 12 alunas por aula. Atenção real, ajuste real."
+          desc="Até 12 pessoas por aula. Atenção real, ajuste real."
         />
         <Feature
           icon={<Flower2 className="size-4" />}
@@ -439,18 +438,18 @@ function CtaFinal() {
         <h2 className="font-serif text-4xl leading-[1.05]">
           Vem fazer sua primeira aula
         </h2>
-        <p className="mt-4 text-[15px] text-paper/85 leading-relaxed max-w-xs mx-auto">
-          1ª aula de cortesia ao se cadastrar. Cadastro em 1 minuto, sem cartão.
+        <p className="mt-4 text-[15px] text-paper/85 leading-relaxed max-w-xs mx-auto italic font-serif">
+          A primeira fica por nossa conta — depois você decide se quer voltar.
         </p>
 
         <Link
           href={URL_CADASTRO_SOPRO}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-8 inline-flex items-center justify-center gap-2 h-13 px-8 py-4 rounded-full bg-terra text-paper font-medium text-[15px] shadow-[0_8px_24px_-8px_rgba(184,115,85,0.55)] hover:bg-[#a3614a] transition-colors active:scale-[0.98]"
+          className="mt-8 inline-flex items-center justify-center gap-2 h-12 px-8 py-3 rounded-full bg-paper text-ink text-[15px] hover:bg-paper/90 transition-colors active:scale-[0.98]"
         >
-          <Gift className="size-4" />
-          Quero minha aula grátis
+          Marcar minha aula
+          <ArrowRight className="size-4" />
         </Link>
 
         <p className="mt-6 text-[12px] text-paper/65">
@@ -469,56 +468,26 @@ function CtaFinal() {
   );
 }
 
-/* ============ FAIXA BÔNUS (entre ComoEAula e Relatos) ============ */
-function FaixaBonus() {
-  return (
-    <section className="px-6 py-10 bg-terra/10 border-y border-terra/20">
-      <div className="max-w-md mx-auto flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-        <div className="shrink-0 size-12 rounded-full bg-terra/15 text-terra flex items-center justify-center">
-          <Gift className="size-5" />
-        </div>
-        <div className="flex-1">
-          <p className="font-serif text-lg text-ink leading-tight">
-            1ª aula por conta da casa
-          </p>
-          <p className="text-[13px] text-ink-soft mt-1">
-            Cadastra no app e a primeira fica de cortesia. Sem cartão, sem cobrança.
-          </p>
-        </div>
-        <Link
-          href={URL_CADASTRO_SOPRO}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-full bg-terra text-paper text-[13px] font-medium hover:bg-[#a3614a] transition-colors active:scale-[0.98]"
-        >
-          Pegar bônus
-          <ArrowRight className="size-3.5" />
-        </Link>
-      </div>
-    </section>
-  );
-}
-
-/* ============ CTA MEIO (entre Pacotes e ComoAgendar) ============ */
-function CtaMeio() {
+/* ============ CONVITE SUAVE (entre Pacotes e ComoAgendar) ============ */
+function ConviteSuave() {
   return (
     <section className="px-6 py-14 bg-cream-soft border-y border-sand-deep/30">
       <div className="max-w-md mx-auto text-center">
-        <Lotus className="size-8 mx-auto text-sage-500 opacity-70 mb-3" />
-        <p className="font-serif text-2xl text-ink leading-tight">
-          Não precisa decidir tudo agora
+        <Lotus className="size-8 mx-auto text-sage-500 opacity-70 mb-4" />
+        <p className="font-serif text-2xl text-ink leading-snug">
+          Antes de escolher pacote,<br />vem sentir uma aula.
         </p>
-        <p className="mt-3 text-[14px] text-ink-soft leading-relaxed max-w-xs mx-auto">
-          Faz o cadastro grátis, experimenta sua aula de cortesia, e depois você escolhe o pacote.
+        <p className="mt-3 text-[14px] text-ink-soft leading-relaxed max-w-xs mx-auto italic">
+          A primeira fica por nossa conta.
         </p>
         <Link
           href={URL_CADASTRO_SOPRO}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 inline-flex items-center justify-center gap-2 h-12 px-7 rounded-full bg-sage-700 text-paper font-medium text-[14px] shadow-[0_8px_24px_-12px_rgba(92,112,80,0.5)] hover:bg-sage-800 transition-colors active:scale-[0.98]"
+          className="mt-6 inline-flex items-center justify-center gap-2 h-11 px-6 rounded-full border border-sage-700/70 text-sage-700 text-[14px] hover:bg-sage-700 hover:text-paper transition-colors active:scale-[0.98]"
         >
-          Começar com aula grátis
-          <ArrowRight className="size-4" />
+          Marcar minha primeira aula
+          <ArrowRight className="size-3.5" />
         </Link>
       </div>
     </section>
@@ -528,15 +497,15 @@ function CtaMeio() {
 /* ============ STICKY CTA (rodapé fixo em mobile) ============ */
 function StickyCta() {
   return (
-    <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-paper/95 backdrop-blur-md border-t border-sand-deep/40 px-4 py-3 safe-bottom shadow-[0_-8px_24px_-12px_rgba(60,60,55,0.18)]">
+    <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-paper/95 backdrop-blur-md border-t border-sand-deep/40 px-4 py-3 safe-bottom">
       <Link
         href={URL_CADASTRO_SOPRO}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center justify-center gap-2 h-12 w-full rounded-full bg-terra text-paper font-medium text-[14px] active:scale-[0.98] transition-transform"
+        className="flex items-center justify-center gap-2 h-11 w-full rounded-full bg-sage-700 text-paper text-[14px] active:scale-[0.98] transition-transform"
       >
-        <Gift className="size-4" />
-        Quero minha aula grátis
+        Vem experimentar
+        <ArrowRight className="size-3.5" />
       </Link>
     </div>
   );
