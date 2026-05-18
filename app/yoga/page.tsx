@@ -11,10 +11,9 @@ import {
 import { Lotus } from "@/components/lotus";
 import { cn } from "@/lib/utils";
 
-// CTA leva pro cadastro do Sopro (app de yoga da Gaby).
-// Quando o subpath /sopro for configurado no domínio, trocar pra
-// https://gabyarbter.com.br/sopro/cadastro (basePath no Sopro + rewrite aqui).
-const URL_CADASTRO_SOPRO = "https://yoga-checkin.vercel.app/cadastro";
+// CTA leva pro cadastro do Sopro (rodando em gabyarbter.com.br/sopro via
+// basePath no Sopro + rewrite aqui no next.config — vide rewrites()).
+const URL_CADASTRO_SOPRO = "https://gabyarbter.com.br/sopro/cadastro";
 const URL_WHATSAPP = "https://wa.me/message/E6RZKY2Y72LEB1";
 
 // Pacotes — confirmar com a Gaby se quer manter esse esquema de desconto
