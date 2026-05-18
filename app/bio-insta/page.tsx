@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 // URLs reais (extraídas do Linktree atual em 2026-05-16).
 // Quando o Sopro for pro ar, trocar URL_YOGA pelo domínio dele.
 const URL_YOUTUBE_AULA = "https://youtu.be/qh38626wbY0?si=lt53dj3pAlutrqst";
-const URL_AGENDAR_MAQUIAGEM = "https://client.tuaagenda.com/c/Gabyarbtermk";
+const URL_AGENDAR_MAQUIAGEM = "/maquiagem";
 const URL_YOGA = "/yoga"; // landing dedicada — leva pro cadastro do Sopro
 const URL_CURSO_AUTOMAQUIAGEM = "https://pay.hotmart.com/Y79914073O";
 
@@ -115,8 +115,8 @@ function Cards() {
       <PortaCard
         href={URL_AGENDAR_MAQUIAGEM}
         icon={<Sparkles className="size-5" />}
-        title="Agendar maquiagem"
-        subtitle="Veja disponibilidade na agenda"
+        title="Maquiagem"
+        subtitle="Express e Blindada · a partir de R$ 175"
         tone="primary"
       />
       <PortaCard

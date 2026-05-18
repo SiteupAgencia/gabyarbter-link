@@ -22,6 +22,7 @@
   --sage-50: #f0f3ed;
   --sage-100: #dde4d4;
   --sage-200: #b5c2a8;
+  --sage-300: #9caa87;
   --sage-500: #7a8d6b;
   --sage-600: #6d8060;
   --sage-700: #5c7050;
@@ -46,6 +47,7 @@
   --color-sage-50: var(--sage-50);
   --color-sage-100: var(--sage-100);
   --color-sage-200: var(--sage-200);
+  --color-sage-300: var(--sage-300);
   --color-sage-500: var(--sage-500);
   --color-sage-600: var(--sage-600);
   --color-sage-700: var(--sage-700);
@@ -86,3 +88,37 @@ body {
 /* safe-area pra notch iOS quando virar PWA */
 .safe-top    { padding-top:    env(safe-area-inset-top); }
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+/* Gradiente sage para botões/CTAs primários */
+.bg-sage-gradient {
+  background: linear-gradient(135deg, var(--sage-600) 0%, var(--sage-700) 100%);
+}
+
+/* Elevações refinadas — usadas em cards/CTAs da landing de maquiagem */
+.elev-1 {
+  box-shadow:
+    0 1px 2px rgba(45, 42, 36, 0.04),
+    0 1px 1px rgba(45, 42, 36, 0.02);
+}
+.elev-2 {
+  box-shadow:
+    0 1px 3px rgba(45, 42, 36, 0.06),
+    0 4px 12px rgba(45, 42, 36, 0.04);
+}
+.elev-3 {
+  box-shadow:
+    0 4px 6px rgba(45, 42, 36, 0.04),
+    0 12px 24px rgba(45, 42, 36, 0.06);
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+.breathe { animation: breathe 6s ease-in-out infinite; }
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.scale-in { animation: scale-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
