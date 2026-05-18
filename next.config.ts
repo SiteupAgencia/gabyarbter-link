@@ -14,17 +14,6 @@ const nextConfig: NextConfig = {
         source: "/sopro/:path*",
         destination: "https://yoga-checkin.vercel.app/sopro/:path*",
       },
-      // Proxy do fluxo de agendamento de maquiagem pro Sopro.
-      // A landing /maquiagem fica neste app (estática); /maquiagem/agendar
-      // e tudo embaixo é servido pelo yoga-checkin.
-      {
-        source: "/maquiagem/agendar",
-        destination: "https://yoga-checkin.vercel.app/sopro/maquiagem/agendar",
-      },
-      {
-        source: "/maquiagem/agendar/:path*",
-        destination: "https://yoga-checkin.vercel.app/sopro/maquiagem/agendar/:path*",
-      },
     ];
   },
 };

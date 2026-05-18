@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Lotus } from "@/components/lotus";
 
-const BOOKING_URL = "https://client.tuaagenda.com/c/Gabyarbtermk/agendar/servicos";
+const BOOKING_URL = "/maquiagem/agendar";
 const WHATSAPP_URL = "https://wa.me/message/E6RZKY2Y72LEB1";
 const INSTAGRAM_URL = "https://www.instagram.com/gabyarbter/";
 
