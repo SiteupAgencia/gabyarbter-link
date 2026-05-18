@@ -19,11 +19,11 @@ const nextConfig: NextConfig = {
       // e tudo embaixo é servido pelo yoga-checkin.
       {
         source: "/maquiagem/agendar",
-        destination: "https://yoga-checkin.vercel.app/maquiagem/agendar",
+        destination: "https://yoga-checkin.vercel.app/sopro/maquiagem/agendar",
       },
       {
         source: "/maquiagem/agendar/:path*",
-        destination: "https://yoga-checkin.vercel.app/maquiagem/agendar/:path*",
+        destination: "https://yoga-checkin.vercel.app/sopro/maquiagem/agendar/:path*",
       },
     ];
   },
