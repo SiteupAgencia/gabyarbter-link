@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMakeServiceBySlug, getMakeSettings } from "@/lib/make/queries";
+import { createAsaasCheckout } from "@/lib/asaas";
 
 export const dynamic = "force-dynamic";
 
@@ -93,11 +94,11 @@ export async function POST(req: Request) {
     });
   }
 
-  // Online: STUB ou MP real
-  const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+  // Online: STUB ou Asaas real
+  const asaasKey = process.env.ASAAS_API_KEY;
 
-  if (!mpToken) {
-    // STUB: aprova imediato pra testar UI
+  if (!asaasKey) {
+    // STUB: aprova imediato pra testar UI (sem cobrança real)
     await admin
       .from("make_appointments")
       .update({
@@ -108,74 +109,51 @@ export async function POST(req: Request) {
       })
       .eq("id", appt.id);
 
-    // TODO: WAHA notifica Gaby
-    return NextResponse.json({
-      ok: true,
-      appointmentId: appt.id,
-      stub: true,
-    });
+    return NextResponse.json({ ok: true, appointmentId: appt.id, stub: true });
   }
 
-  // MP real: criar preference.
+  // Asaas: cria checkout hospedado (coleta CPF/pagamento na página do Asaas)
   const origin =
     req.headers.get("origin") ??
     process.env.NEXT_PUBLIC_SITE_URL ??
     "https://gabyarbter.com.br";
-  const successUrl = `${origin}/maquiagem/agendar/sucesso?id=${appt.id}`;
-  const pendingUrl = `${origin}/maquiagem/agendar/sucesso?id=${appt.id}&status=pending`;
-  const failureUrl = `${origin}/maquiagem/agendar/sucesso?id=${appt.id}&status=fail`;
-  const webhookUrl = `${origin}/api/webhook/mp`;
 
-  const mpRes = await fetch("https://api.mercadopago.com/checkout/preferences", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${mpToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      items: [
-        {
-          title: service.name,
-          quantity: 1,
-          unit_price: service.price_cents / 100,
-          currency_id: "BRL",
-        },
-      ],
-      external_reference: appt.id,
-      payer: {
-        name: body.clientName.trim(),
-        email: body.clientEmail?.trim() || undefined,
-      },
-      back_urls: {
-        success: successUrl,
-        pending: pendingUrl,
-        failure: failureUrl,
-      },
-      auto_return: "approved",
-      notification_url: webhookUrl,
-    }),
-  });
+  try {
+    const checkout = await createAsaasCheckout({
+      serviceName: service.name,
+      description: service.description ?? service.name,
+      valueReais: service.price_cents / 100,
+      externalReference: appt.id,
+      successUrl: `${origin}/maquiagem/agendar/sucesso?id=${appt.id}`,
+      cancelUrl: `${origin}/maquiagem/agendar`,
+      expiredUrl: `${origin}/maquiagem/agendar/sucesso?id=${appt.id}&status=fail`,
+      customerName: body.clientName.trim(),
+      customerEmail: body.clientEmail?.trim() || null,
+      customerPhone: appt.client_phone,
+      allowPix: service.payment_methods.includes("pix"),
+    });
 
-  if (!mpRes.ok) {
-    const text = await mpRes.text();
+    await admin
+      .from("make_appointments")
+      .update({ asaas_checkout_id: checkout.id })
+      .eq("id", appt.id);
+
+    return NextResponse.json({
+      ok: true,
+      appointmentId: appt.id,
+      redirectUrl: checkout.link,
+    });
+  } catch (e) {
+    // Falhou criar checkout: cancela o appointment pra liberar o slot.
+    await admin
+      .from("make_appointments")
+      .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
+      .eq("id", appt.id);
     return NextResponse.json(
-      { ok: false, error: `mp_create_preference: ${text}` },
+      { ok: false, error: String((e as Error).message || e) },
       { status: 502 },
     );
   }
-
-  const mp = (await mpRes.json()) as { id: string; init_point: string };
-
-  await admin
-    .from("make_appointments")
-    .update({ mp_preference_id: mp.id })
-    .eq("id", appt.id);
-
-  return NextResponse.json({
-    ok: true,
-    appointmentId: appt.id,
-    redirectUrl: mp.init_point,
-  });
 }
 
 function normalizePhone(raw: string): string {
