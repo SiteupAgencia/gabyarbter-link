@@ -143,7 +143,7 @@ export function DataStep({
         <p className="text-xs text-ink-soft text-center leading-relaxed">
           {isCash
             ? "Sua data fica reservada. Pagamento em dinheiro presencial no dia."
-            : "Você é redirecionada pro Mercado Pago. Cancelamento até 24h antes devolve."}
+            : "Você vai pra uma página segura pra pagar via Pix ou cartão. Cancelamento até 24h antes devolve."}
         </p>
       </form>
     </section>

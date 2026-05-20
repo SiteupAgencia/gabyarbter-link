@@ -54,14 +54,9 @@ export async function createAsaasCheckout(
     ],
   };
 
-  // Pré-preenche dados do cliente quando houver (reduz fricção no checkout)
-  if (input.customerName) {
-    payload.customerData = {
-      name: input.customerName,
-      ...(input.customerEmail ? { email: input.customerEmail } : {}),
-      ...(input.customerPhone ? { phone: input.customerPhone } : {}),
-    };
-  }
+  // Não pré-preenchemos customerData: o Asaas exige cpfCnpj + endereço
+  // completo quando customerData é enviado. O checkout hospedado coleta
+  // esses dados na própria página do Asaas (nome, CPF, etc).
 
   const doRequest = async (body: Record<string, unknown>) =>
     fetch(`${ASAAS_BASE}/checkouts`, {
