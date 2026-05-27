@@ -54,7 +54,16 @@ export type MakeAppointment = {
   starts_at: string;
   ends_at: string;
   status: MakeAppointmentStatus;
+  /** Valor pago via Asaas (entrada). Pra serviço cash = total_cents. */
   amount_cents: number;
+  /** Preço total do serviço. */
+  total_cents: number;
+  /** Entrada paga online (= amount_cents pra novos; 0 em cash). */
+  deposit_cents: number;
+  /** Quando o restante (presencial) foi pago. */
+  final_paid_at: string | null;
+  /** Como o restante foi pago presencialmente. */
+  final_payment_method: "cash" | "pix" | "credit_card" | null;
   payment_method: MakePaymentMethod | null;
   mp_preference_id: string | null;
   mp_payment_id: string | null;
@@ -73,6 +82,8 @@ export type MakeSettings = {
   cancel_refund_hours: number;
   slot_step_minutes: number;
   timezone: string;
+  /** % do valor cobrado como entrada pra confirmar agendamento (0-100). */
+  deposit_percent: number;
 };
 
 export type MakeBusySlot = {

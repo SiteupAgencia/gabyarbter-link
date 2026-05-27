@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMakeServiceBySlug, getMakeSettings } from "@/lib/make/queries";
 import { createAsaasCheckout } from "@/lib/asaas";
+import { notifyGabyNewBooking } from "@/lib/make/notify";
 
 export const dynamic = "force-dynamic";
 
@@ -46,10 +47,16 @@ export async function POST(req: Request) {
     );
   }
 
-  const isCash = service.payment_methods.includes("cash");
+  // Serviços só-dinheiro pagam tudo no dia (sem entrada online).
+  // Outros: entrada = deposit_percent% do total via Asaas.
+  const isCash = service.payment_methods.length === 1 && service.payment_methods[0] === "cash";
+  const totalCents = service.price_cents;
+  const depositCents = isCash
+    ? totalCents
+    : Math.round((totalCents * settings.deposit_percent) / 100);
 
-  // Dinheiro: confirma direto (sem MP)
-  // Online: status pending_payment até webhook MP confirmar
+  // Dinheiro: confirma direto (sem Asaas)
+  // Online: status pending_payment até webhook confirmar
   const initialStatus = isCash ? "confirmed" : "pending_payment";
 
   const { data: appt, error: insertError } = await admin
@@ -62,7 +69,9 @@ export async function POST(req: Request) {
       starts_at: startsAt.toISOString(),
       ends_at: endsAt.toISOString(),
       status: initialStatus,
-      amount_cents: service.price_cents,
+      total_cents: totalCents,
+      deposit_cents: depositCents,
+      amount_cents: depositCents, // legado: valor cobrado online
       payment_method: isCash ? "cash" : null,
       confirmed_at: isCash ? new Date().toISOString() : null,
     })
@@ -84,9 +93,9 @@ export async function POST(req: Request) {
     );
   }
 
-  // Dinheiro: pronto
+  // Dinheiro: pronto (confirmado na hora, sem pagamento online)
   if (isCash) {
-    // TODO: disparar WAHA pra Gaby (Fase 2.4)
+    await notifyGabyNewBooking(appt.id);
     return NextResponse.json({
       ok: true,
       appointmentId: appt.id,
@@ -109,6 +118,7 @@ export async function POST(req: Request) {
       })
       .eq("id", appt.id);
 
+    await notifyGabyNewBooking(appt.id);
     return NextResponse.json({ ok: true, appointmentId: appt.id, stub: true });
   }
 
@@ -121,8 +131,8 @@ export async function POST(req: Request) {
   try {
     const checkout = await createAsaasCheckout({
       serviceName: service.name,
-      description: service.description ?? service.name,
-      valueReais: service.price_cents / 100,
+      description: `Entrada (${settings.deposit_percent}%) — ${service.name}`,
+      valueReais: depositCents / 100,
       externalReference: appt.id,
       successUrl: `${origin}/maquiagem/agendar/sucesso?id=${appt.id}`,
       cancelUrl: `${origin}/maquiagem/agendar`,

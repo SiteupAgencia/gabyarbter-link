@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyGabyNewBooking, notifyGabyAppointmentFreed } from "@/lib/make/notify";
 
 /**
  * Webhook do Asaas.
@@ -62,8 +63,8 @@ export async function POST(req: Request) {
 
   switch (event) {
     case "PAYMENT_CONFIRMED":
-    case "PAYMENT_RECEIVED":
-      await admin
+    case "PAYMENT_RECEIVED": {
+      const { data: confirmed } = await admin
         .from("make_appointments")
         .update({
           ...base,
@@ -72,16 +73,33 @@ export async function POST(req: Request) {
           confirmed_at: new Date().toISOString(),
         })
         .eq("id", apptId)
-        .eq("status", "pending_payment"); // não rebaixa algo já cancelado
-      // TODO(WAHA): notificar Gaby
+        .eq("status", "pending_payment") // não rebaixa algo já cancelado
+        .select("id")
+        .maybeSingle();
+      // Avisa a Gaby só na transição real pending_payment -> confirmed.
+      // Se o Asaas reenviar o evento, `confirmed` vem null e não duplica.
+      if (confirmed) {
+        await notifyGabyNewBooking(apptId);
+      }
       break;
+    }
 
-    case "PAYMENT_REFUNDED":
+    case "PAYMENT_REFUNDED": {
+      const { data: prevRefund } = await admin
+        .from("make_appointments")
+        .select("status")
+        .eq("id", apptId)
+        .maybeSingle();
       await admin
         .from("make_appointments")
         .update({ ...base, status: "refunded", cancelled_at: new Date().toISOString() })
         .eq("id", apptId);
+      // Só avisa liberação se havia um horário de fato reservado (confirmado).
+      if (prevRefund?.status === "confirmed") {
+        await notifyGabyAppointmentFreed(apptId, "reembolso");
+      }
       break;
+    }
 
     case "PAYMENT_OVERDUE":
     case "PAYMENT_DELETED":

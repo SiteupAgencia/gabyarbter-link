@@ -130,6 +130,7 @@ export function buildSettings(rows: { key: string; value: string }[]): MakeSetti
     cancel_refund_hours: Number(map.get("cancel_refund_hours") ?? 24),
     slot_step_minutes: Number(map.get("slot_step_minutes") ?? 15),
     timezone: map.get("timezone") ?? "America/Sao_Paulo",
+    deposit_percent: Number(map.get("deposit_percent") ?? 30),
   };
 }
 
