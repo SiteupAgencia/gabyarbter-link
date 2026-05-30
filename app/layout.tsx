@@ -16,23 +16,56 @@ const sans = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://gabyarbter.com.br"),
-  title: "Gaby Arbter — Yoga, Maquiagem, Ayurveda",
+  title: {
+    default: "Gaby Arbter — Yoga, Maquiagem e Ayurveda em Erechim/RS",
+    template: "%s · Gaby Arbter",
+  },
   description:
-    "Se vê beleza aqui, há tanta beleza aí, que é impossível não ver beleza em tudo. Mãe, maquiadora e professora de yoga em Erechim.",
+    "Mãe, maquiadora e professora de yoga em Erechim/RS. Aulas de yoga em pequenos grupos, maquiagem Express e Blindada, e o app Sopro pra agendar.",
+  keywords: [
+    "Gaby Arbter",
+    "yoga Erechim",
+    "maquiagem Erechim",
+    "maquiagem RS",
+    "professora de yoga Erechim",
+    "maquiadora Erechim",
+    "Ashtanga Erechim",
+    "Sopro yoga",
+    "ayurveda",
+  ],
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "Gaby Arbter",
+    title: "Gaby Arbter — Yoga, Maquiagem e Ayurveda em Erechim/RS",
     description:
-      "Yoga, maquiagem, ayurveda e maternidade — em Erechim. Aulas, agendamento, curso e o app Sopro.",
+      "Aulas de yoga em pequenos grupos, maquiagem Express e Blindada, e o app Sopro pra agendar. Em Erechim/RS.",
     url: "https://gabyarbter.com.br",
     siteName: "Gaby Arbter",
     locale: "pt_BR",
     type: "website",
+    images: [
+      {
+        url: "/photos/avatar.jpg",
+        width: 1200,
+        height: 1200,
+        alt: "Gaby Arbter — yoga, maquiagem e ayurveda em Erechim",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Gaby Arbter",
+    title: "Gaby Arbter — Yoga, Maquiagem em Erechim/RS",
     description:
-      "Yoga, maquiagem, ayurveda e maternidade — em Erechim.",
+      "Aulas em pequenos grupos, maquiagem Express e Blindada. Em Erechim/RS.",
+    images: ["/photos/avatar.jpg"],
+  },
+  authors: [{ name: "Gaby Arbter", url: "https://www.instagram.com/gabyarbter/" }],
+  creator: "Gaby Arbter",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
 };
 

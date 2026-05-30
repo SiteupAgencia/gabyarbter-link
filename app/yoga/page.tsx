@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,6 +11,29 @@ import {
 } from "lucide-react";
 import { Lotus } from "@/components/lotus";
 import { cn } from "@/lib/utils";
+import { JsonLd, yogaStudio, gabyPerson, yogaFaqs, buildFaqSchema } from "@/lib/seo/jsonld";
+import { Faq } from "@/components/faq";
+
+export const metadata: Metadata = {
+  title: "Aulas de Yoga em Erechim/RS — Sopro com Gaby Arbter",
+  description:
+    "Aulas de yoga em Erechim em pequenos grupos, até 14 pessoas. Segundas 18:00 e 19:10, Ashtanga nas quartas às 07:00. Mensal Sopro a partir de R$ 180.",
+  alternates: { canonical: "/yoga" },
+  openGraph: {
+    title: "Aulas de Yoga em Erechim/RS — Sopro",
+    description:
+      "Pequenos grupos, presença antes de performance. Mensal Sopro com 4 aulas + passe livre nas quartas-feiras (Ashtanga).",
+    url: "https://gabyarbter.com.br/yoga",
+    images: [
+      {
+        url: "/photos/turma-yoga.jpg",
+        width: 1200,
+        height: 1200,
+        alt: "Turma de yoga em Erechim",
+      },
+    ],
+  },
+};
 
 // CTA leva pro cadastro do Sopro (rodando em gabyarbter.com.br/sopro via
 // basePath no Sopro + rewrite aqui no next.config — vide rewrites()).
@@ -31,7 +55,6 @@ type Pacote = {
 
 const PACOTES: Pacote[] = [
   { tipo: "avulsa", label: "Aula avulsa",   total: 40, aulas: 1, porAula: 40 },
-  { tipo: "pacote", label: "Pacote 5 aulas", total: 180, aulas: 5, porAula: 36 },
   { tipo: "pacote", label: "Pacote 10 aulas", total: 320, aulas: 10, porAula: 32 },
   {
     tipo: "mensal",
@@ -72,6 +95,13 @@ const RELATOS = [
 export default function YogaPage() {
   return (
     <main className="min-h-dvh safe-top safe-bottom pb-20 sm:pb-0">
+      <JsonLd
+        data={[
+          yogaStudio,
+          gabyPerson,
+          buildFaqSchema(yogaFaqs, "https://gabyarbter.com.br/yoga"),
+        ]}
+      />
       <Hero />
       <Separador />
       <ComoEAula />
@@ -80,6 +110,7 @@ export default function YogaPage() {
       <Pacotes />
       <ConviteSuave />
       <ComoAgendar />
+      <Faq items={yogaFaqs} />
       <CtaFinal />
       <FooterMini />
       <StickyCta />
@@ -194,7 +225,7 @@ function ComoEAula() {
         <Feature
           icon={<Users className="size-4" />}
           title="Pequenos grupos"
-          desc="Até 12 pessoas por aula. Atenção real, ajuste real."
+          desc="Até 14 pessoas por aula. Atenção real, ajuste real."
         />
         <Feature
           icon={<Flower2 className="size-4" />}

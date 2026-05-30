@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Lotus } from "@/components/lotus";
+import { JsonLd, beautySalon, gabyPerson, maquiagemFaqs, buildFaqSchema } from "@/lib/seo/jsonld";
+import { Faq } from "@/components/faq";
 
 // MANTÉM TuaAgenda enquanto o /maquiagem/agendar interno está em
 // validação. Só trocar pra "/maquiagem/agendar" quando confirmar
@@ -11,15 +13,38 @@ const WHATSAPP_URL = "https://wa.me/message/E6RZKY2Y72LEB1";
 const INSTAGRAM_URL = "https://www.instagram.com/gabyarbter/";
 
 export const metadata: Metadata = {
-  title: "Gaby Arbter · Maquiagem em Erechim",
+  title: "Maquiagem em Erechim/RS — Gaby Arbter (Express e Blindada)",
   description:
-    "Maquiagem Express e Maquiagem Blindada em Erechim. Beleza como ritual — pele resistente, traços valorizados, presença encarnada.",
+    "Maquiagem profissional em Erechim/RS. Express R$ 175 (~30min) e Blindada R$ 200-215 (~45min). Atendimento sextas e sábados, com agendamento online e entrada via PIX.",
+  alternates: { canonical: "/maquiagem" },
+  keywords: [
+    "maquiagem Erechim",
+    "maquiadora Erechim",
+    "maquiagem RS",
+    "maquiagem profissional Erechim",
+    "maquiagem blindada Erechim",
+    "Gaby Arbter maquiagem",
+  ],
   openGraph: {
-    title: "Gaby Arbter · Maquiagem em Erechim",
+    title: "Maquiagem em Erechim/RS — Gaby Arbter",
     description:
-      "Maquiagem Express e Maquiagem Blindada em Erechim. Beleza como ritual.",
-    images: ["/maquiagem/hero-makes.jpg"],
+      "Express R$ 175 e Blindada R$ 200-215. Estúdio em Erechim, sextas e sábados. Agendamento online com entrada via PIX.",
+    url: "https://gabyarbter.com.br/maquiagem",
+    images: [
+      {
+        url: "/maquiagem/hero-makes.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Maquiagem Gaby Arbter em Erechim",
+      },
+    ],
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Maquiagem em Erechim/RS — Gaby Arbter",
+    description: "Express R$ 175 · Blindada R$ 200-215. Em Erechim, sextas e sábados.",
+    images: ["/maquiagem/hero-makes.jpg"],
   },
 };
 
@@ -33,12 +58,20 @@ const GALLERY = [
 export default function MaquiagemPage() {
   return (
     <main className="flex-1 pb-24 sm:pb-0">
+      <JsonLd
+        data={[
+          beautySalon,
+          gabyPerson,
+          buildFaqSchema(maquiagemFaqs, "https://gabyarbter.com.br/maquiagem"),
+        ]}
+      />
       <SiteHeader />
       <Hero />
       <Servicos />
       <ComoFunciona />
       <Galeria />
       <SobreGaby />
+      <Faq items={maquiagemFaqs} />
       <CtaFinal />
       <SiteFooter />
       <StickyMobileCta />

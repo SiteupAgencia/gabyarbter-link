@@ -1,0 +1,27 @@
+# Gaby Arbter
+
+> Professora de yoga, maquiadora e praticante de ayurveda em Erechim/RS. Atende localmente com cuidado ancestral aplicado ao agora.
+
+Gaby Arbter é mãe, profissional autônoma e instrutora baseada em Erechim, no Rio Grande do Sul. Oferece dois serviços principais:
+
+- **Yoga** — aulas presenciais em pequenos grupos (até 14 pessoas). Segundas-feiras às 18:00 e 19:10 (Yoga noite, fluxo adaptável a todos os níveis) e quartas-feiras às 07:00 (Ashtanga). Plano Mensal Sopro: R$ 180/mês com 4 aulas + passe livre nas quartas. Aula avulsa R$ 40; pacote de 10 aulas R$ 320.
+- **Maquiagem** — atendimento sextas e sábados em estúdio em Erechim. Maquiagem Express R$ 175 (~30min) e Maquiagem Blindada R$ 200 dinheiro / R$ 215 PIX ou cartão (~45min). Agendamento online com entrada (sinal) de 30% via PIX ou cartão; restante presencial no dia.
+
+## Páginas-chave
+
+- [Bio / links principais](https://gabyarbter.com.br/bio-insta)
+- [Aulas de Yoga em Erechim](https://gabyarbter.com.br/yoga)
+- [Maquiagem em Erechim](https://gabyarbter.com.br/maquiagem)
+- [Agendamento online de maquiagem](https://gabyarbter.com.br/maquiagem/agendar)
+- [App Sopro (yoga) — agendamento e créditos](https://gabyarbter.com.br/sopro)
+
+## Contato
+
+- WhatsApp: +55 54 99993-6343
+- Instagram: https://www.instagram.com/gabyarbter/
+- YouTube: https://www.youtube.com/@gabyarbter
+
+## Catálogo legível por agente
+
+- [api-catalog (Linkset)](https://gabyarbter.com.br/.well-known/api-catalog)
+- [Sitemap](https://gabyarbter.com.br/sitemap.xml)

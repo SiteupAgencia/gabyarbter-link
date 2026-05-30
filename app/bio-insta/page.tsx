@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -14,6 +15,28 @@ import {
   WhatsappIcon,
 } from "@/components/brand-icons";
 import { cn } from "@/lib/utils";
+import { JsonLd, gabyPerson, siteWebSite } from "@/lib/seo/jsonld";
+
+export const metadata: Metadata = {
+  title: "Gaby Arbter — Yoga, Maquiagem e Ayurveda em Erechim/RS",
+  description:
+    "Mãe, maquiadora e professora de yoga em Erechim/RS. Conheça aulas de yoga, agendamento de maquiagem, curso de automaquiagem e o app Sopro.",
+  alternates: { canonical: "/bio-insta" },
+  openGraph: {
+    title: "Gaby Arbter — Yoga, Maquiagem e Ayurveda em Erechim/RS",
+    description:
+      "Mãe, maquiadora e professora de yoga em Erechim/RS. Aulas, agendamento, curso e o app Sopro.",
+    url: "https://gabyarbter.com.br/bio-insta",
+    images: [
+      {
+        url: "/photos/avatar.jpg",
+        width: 1200,
+        height: 1200,
+        alt: "Gaby Arbter — Erechim/RS",
+      },
+    ],
+  },
+};
 
 // URLs reais (extraídas do Linktree atual em 2026-05-16).
 // Quando o Sopro for pro ar, trocar URL_YOGA pelo domínio dele.
@@ -29,6 +52,7 @@ const URL_YOUTUBE_CANAL = "https://www.youtube.com/@gabyarbter";
 export default function Home() {
   return (
     <main className="min-h-dvh safe-top safe-bottom flex flex-col items-center px-5 py-10 relative overflow-hidden">
+      <JsonLd data={[gabyPerson, siteWebSite]} />
       <div
         aria-hidden
         className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 size-[520px] rounded-full"
