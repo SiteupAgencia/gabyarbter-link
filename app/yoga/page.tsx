@@ -235,7 +235,7 @@ function ComoEAula() {
         <Feature
           icon={<Clock className="size-4" />}
           title="60 minutos"
-          desc="Aulas seg/qua/sex de manhã e à noite. Em Erechim."
+          desc="Segundas à noite e quartas de manhã. Em Erechim."
         />
       </ul>
 
