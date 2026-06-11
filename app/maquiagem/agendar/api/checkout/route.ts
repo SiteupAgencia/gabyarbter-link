@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMakeServiceBySlug, getMakeSettings } from "@/lib/make/queries";
-import { createAsaasCheckout } from "@/lib/asaas";
 import { notifyGabyNewBooking } from "@/lib/make/notify";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +13,8 @@ type Body = {
   clientEmail?: string | null;
 };
 
+// Sem cobrança online: a Gaby prefere receber no dia (PIX, dinheiro ou cartão).
+// O agendamento entra confirmado na hora — reserva o horário e avisa a Gaby.
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as Body | null;
   if (!body?.serviceSlug || !body?.startsAtIso || !body?.clientName || !body?.clientPhone) {
@@ -47,18 +48,6 @@ export async function POST(req: Request) {
     );
   }
 
-  // Serviços só-dinheiro pagam tudo no dia (sem entrada online).
-  // Outros: entrada = deposit_percent% do total via Asaas.
-  const isCash = service.payment_methods.length === 1 && service.payment_methods[0] === "cash";
-  const totalCents = service.price_cents;
-  const depositCents = isCash
-    ? totalCents
-    : Math.round((totalCents * settings.deposit_percent) / 100);
-
-  // Dinheiro: confirma direto (sem Asaas)
-  // Online: status pending_payment até webhook confirmar
-  const initialStatus = isCash ? "confirmed" : "pending_payment";
-
   const { data: appt, error: insertError } = await admin
     .from("make_appointments")
     .insert({
@@ -68,12 +57,12 @@ export async function POST(req: Request) {
       client_email: body.clientEmail?.trim() || null,
       starts_at: startsAt.toISOString(),
       ends_at: endsAt.toISOString(),
-      status: initialStatus,
-      total_cents: totalCents,
-      deposit_cents: depositCents,
-      amount_cents: depositCents, // legado: valor cobrado online
-      payment_method: isCash ? "cash" : null,
-      confirmed_at: isCash ? new Date().toISOString() : null,
+      status: "confirmed",
+      total_cents: service.price_cents,
+      deposit_cents: 0, // nada pago online — recebe tudo no dia
+      amount_cents: 0,
+      payment_method: null,
+      confirmed_at: new Date().toISOString(),
     })
     .select()
     .single();
@@ -82,10 +71,7 @@ export async function POST(req: Request) {
     // exclusion constraint (slot já ocupado) gera 23P01
     const code = (insertError as { code?: string } | null)?.code;
     if (code === "23P01") {
-      return NextResponse.json(
-        { ok: false, error: "slot_taken" },
-        { status: 409 },
-      );
+      return NextResponse.json({ ok: false, error: "slot_taken" }, { status: 409 });
     }
     return NextResponse.json(
       { ok: false, error: insertError?.message || "insert_failed" },
@@ -93,77 +79,9 @@ export async function POST(req: Request) {
     );
   }
 
-  // Dinheiro: pronto (confirmado na hora, sem pagamento online)
-  if (isCash) {
-    await notifyGabyNewBooking(appt.id);
-    return NextResponse.json({
-      ok: true,
-      appointmentId: appt.id,
-      stub: false,
-    });
-  }
+  await notifyGabyNewBooking(appt.id);
 
-  // Online: STUB ou Asaas real
-  const asaasKey = process.env.ASAAS_API_KEY;
-
-  if (!asaasKey) {
-    // STUB: aprova imediato pra testar UI (sem cobrança real)
-    await admin
-      .from("make_appointments")
-      .update({
-        status: "confirmed",
-        payment_method: "stub",
-        mp_status: "stub_approved",
-        confirmed_at: new Date().toISOString(),
-      })
-      .eq("id", appt.id);
-
-    await notifyGabyNewBooking(appt.id);
-    return NextResponse.json({ ok: true, appointmentId: appt.id, stub: true });
-  }
-
-  // Asaas: cria checkout hospedado (coleta CPF/pagamento na página do Asaas)
-  const origin =
-    req.headers.get("origin") ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    "https://gabyarbter.com.br";
-
-  try {
-    const checkout = await createAsaasCheckout({
-      serviceName: service.name,
-      description: `Entrada (${settings.deposit_percent}%) — ${service.name}`,
-      valueReais: depositCents / 100,
-      externalReference: appt.id,
-      successUrl: `${origin}/maquiagem/agendar/sucesso?id=${appt.id}`,
-      cancelUrl: `${origin}/maquiagem/agendar`,
-      expiredUrl: `${origin}/maquiagem/agendar/sucesso?id=${appt.id}&status=fail`,
-      customerName: body.clientName.trim(),
-      customerEmail: body.clientEmail?.trim() || null,
-      customerPhone: appt.client_phone,
-      allowPix: service.payment_methods.includes("pix"),
-    });
-
-    await admin
-      .from("make_appointments")
-      .update({ asaas_checkout_id: checkout.id })
-      .eq("id", appt.id);
-
-    return NextResponse.json({
-      ok: true,
-      appointmentId: appt.id,
-      redirectUrl: checkout.link,
-    });
-  } catch (e) {
-    // Falhou criar checkout: cancela o appointment pra liberar o slot.
-    await admin
-      .from("make_appointments")
-      .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
-      .eq("id", appt.id);
-    return NextResponse.json(
-      { ok: false, error: String((e as Error).message || e) },
-      { status: 502 },
-    );
-  }
+  return NextResponse.json({ ok: true, appointmentId: appt.id });
 }
 
 function normalizePhone(raw: string): string {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   getMakeBlockedDatesBetween,
   getMakeBusySlots,
+  getMakeRecurringBlocks,
   getMakeServiceBySlug,
   getMakeSettings,
   getMakeWeeklySchedule,
@@ -23,9 +24,10 @@ export async function GET(req: Request) {
   const service = await getMakeServiceBySlug(slug);
   if (!service) return NextResponse.json({ error: "service_not_found" }, { status: 404 });
 
-  const [schedule, blocked, settings] = await Promise.all([
+  const [schedule, blocked, recurring, settings] = await Promise.all([
     getMakeWeeklySchedule(),
     getMakeBlockedDatesBetween(fromYmd, toYmd),
+    getMakeRecurringBlocks(),
     getMakeSettings(),
   ]);
 
@@ -43,6 +45,7 @@ export async function GET(req: Request) {
       service,
       weeklySchedule: schedule,
       blockedDates: blocked,
+      recurringBlocks: recurring,
       busySlots: busy,
       settings,
       now,

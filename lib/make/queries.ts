@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import type {
   MakeBlockedDate,
   MakeBusySlot,
+  MakeRecurringBlock,
   MakeService,
   MakeWeeklySchedule,
 } from "./types";
@@ -52,6 +53,21 @@ export async function getMakeBlockedDatesBetween(
     .lte("date", toYmd);
   if (error) throw error;
   return (data ?? []) as MakeBlockedDate[];
+}
+
+export async function getMakeRecurringBlocks(): Promise<MakeRecurringBlock[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("make_recurring_blocks")
+    .select("*")
+    .eq("active", true);
+  // Resiliente: se a migration onda14 ainda não rodou, não derruba a
+  // disponibilidade online — só ignora os bloqueios recorrentes.
+  if (error) {
+    console.warn("[make] make_recurring_blocks indisponível:", error.message);
+    return [];
+  }
+  return (data ?? []) as MakeRecurringBlock[];
 }
 
 export async function getMakeBusySlots(

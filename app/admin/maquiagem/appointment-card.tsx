@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { markFinalPaid, unmarkFinalPaid, markCompleted, markNoShow } from "./actions";
 import { Check, Phone, Loader2, AlertCircle, CheckCheck, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const TZ = "America/Sao_Paulo";
 
@@ -50,8 +51,9 @@ export function AppointmentCard({ appt, serviceName }: { appt: AppointmentRow; s
   const totalCents = appt.total_cents ?? appt.amount_cents;
   const depositCents = appt.deposit_cents ?? appt.amount_cents;
   const remainingCents = Math.max(0, totalCents - depositCents);
-  const hasDeposit = depositCents > 0 && remainingCents > 0;
   const finalPaid = appt.final_paid_at !== null;
+  const hasDeposit = depositCents > 0 && remainingCents > 0; // entrada online + restante presencial
+  const dueOnDay = !finalPaid && remainingCents > 0; // ainda falta receber no dia
   const isCompleted = appt.status === "completed";
   const isPendingPayment = appt.status === "pending_payment";
 
@@ -69,30 +71,30 @@ export function AppointmentCard({ appt, serviceName }: { appt: AppointmentRow; s
   }
 
   return (
-    <article className="rounded-2xl bg-white border border-neutral-200 p-4 shadow-sm">
+    <article className="rounded-2xl bg-white border border-sand elev-1 p-4">
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex items-baseline gap-2">
-            <span className="font-serif text-xl tabular-nums text-neutral-900">{timeBR(appt.starts_at)}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-serif text-xl tabular-nums text-ink">{timeBR(appt.starts_at)}</span>
             {isCompleted && (
-              <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+              <span className="inline-flex items-center gap-1 text-xs text-sage-700 bg-sage-50 border border-sage-100 rounded-full px-2 py-0.5">
                 <CheckCheck className="size-3" /> Concluído
               </span>
             )}
             {isPendingPayment && (
-              <span className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
-                <AlertCircle className="size-3" /> Aguardando pagamento
+              <span className="inline-flex items-center gap-1 text-xs text-terra bg-terra-soft/20 border border-terra-soft/40 rounded-full px-2 py-0.5">
+                <AlertCircle className="size-3" /> Aguardando
               </span>
             )}
           </div>
-          <p className="font-medium text-neutral-900 mt-1 truncate">{appt.client_name}</p>
-          <p className="text-sm text-neutral-500 mt-0.5">{serviceName}</p>
+          <p className="font-medium text-ink mt-1 truncate">{appt.client_name}</p>
+          <p className="text-sm text-ink-soft mt-0.5">{serviceName}</p>
         </div>
         <a
           href={`https://wa.me/${phoneDigits}`}
           target="_blank"
           rel="noopener"
-          className="inline-flex items-center gap-1 text-sm text-emerald-700 hover:text-emerald-800 shrink-0"
+          className="inline-flex items-center gap-1 text-sm text-sage-700 hover:text-sage-900 transition shrink-0"
         >
           <Phone className="size-4" />
           WhatsApp
@@ -100,38 +102,42 @@ export function AppointmentCard({ appt, serviceName }: { appt: AppointmentRow; s
       </header>
 
       {/* Valores */}
-      <div className="mt-3 rounded-xl bg-neutral-50 border border-neutral-200 p-3 text-sm">
+      <div className="mt-3 rounded-xl bg-cream-soft border border-sand p-3 text-sm">
         <div className="flex items-baseline justify-between">
-          <span className="text-neutral-500">Total</span>
-          <span className="font-medium tabular-nums text-neutral-900">{formatBRL(totalCents)}</span>
+          <span className="text-ink-soft">Total</span>
+          <span className="font-medium tabular-nums text-ink">{formatBRL(totalCents)}</span>
         </div>
         {hasDeposit && (
-          <>
-            <div className="flex items-baseline justify-between mt-1">
-              <span className="text-neutral-500">Entrada (online) ✓</span>
-              <span className="tabular-nums text-neutral-700">{formatBRL(depositCents)}</span>
-            </div>
-            <div className="flex items-baseline justify-between mt-1 pt-2 border-t border-neutral-200">
-              <span className={finalPaid ? "text-emerald-700" : "text-rose-700"}>
-                {finalPaid ? `Restante pago via ${methodLabel(appt.final_payment_method)} ✓` : "Falta receber no dia"}
-              </span>
-              <span className={`font-medium tabular-nums ${finalPaid ? "text-neutral-400 line-through" : "text-rose-700"}`}>
-                {formatBRL(remainingCents)}
-              </span>
-            </div>
-          </>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-ink-soft">Entrada (online) ✓</span>
+            <span className="tabular-nums text-ink-soft">{formatBRL(depositCents)}</span>
+          </div>
         )}
-        {!hasDeposit && depositCents === totalCents && (
-          <p className="text-xs text-neutral-500 mt-1">Pagamento integral online ✓</p>
+        {remainingCents > 0 && (
+          <div className="flex items-baseline justify-between mt-1 pt-2 border-t border-sand">
+            <span className={finalPaid ? "text-sage-700" : "text-terra"}>
+              {finalPaid
+                ? `${hasDeposit ? "Restante" : "Pago"} via ${methodLabel(appt.final_payment_method)} ✓`
+                : hasDeposit
+                  ? "Falta receber no dia"
+                  : "A receber no dia"}
+            </span>
+            <span className={cn("font-medium tabular-nums", finalPaid ? "text-ink-mute line-through" : "text-terra")}>
+              {formatBRL(remainingCents)}
+            </span>
+          </div>
+        )}
+        {remainingCents === 0 && totalCents > 0 && (
+          <p className="text-xs text-ink-soft mt-1">Pago integralmente ✓</p>
         )}
       </div>
 
       {appt.notes && (
-        <p className="mt-3 text-sm text-neutral-600 italic">"{appt.notes}"</p>
+        <p className="mt-3 text-sm text-ink-soft italic">&ldquo;{appt.notes}&rdquo;</p>
       )}
 
       {error && (
-        <p className="mt-3 text-sm text-rose-700 inline-flex items-start gap-1.5">
+        <p className="mt-3 text-sm text-terra inline-flex items-start gap-1.5">
           <AlertCircle className="size-4 mt-px shrink-0" />
           {error}
         </p>
@@ -140,7 +146,7 @@ export function AppointmentCard({ appt, serviceName }: { appt: AppointmentRow; s
       {/* Ações */}
       {!isCompleted && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {hasDeposit && !finalPaid && (
+          {dueOnDay && (
             <>
               <ActionButton
                 onClick={() => run(() => markFinalPaid(appt.id, "pix"))}
@@ -196,10 +202,10 @@ function ActionButton({
   tone: "primary" | "secondary" | "danger" | "ghost";
 }) {
   const styles = {
-    primary: "bg-rose-600 hover:bg-rose-700 text-white border-transparent",
-    secondary: "bg-white hover:bg-neutral-50 text-neutral-700 border-neutral-300",
-    danger: "bg-white hover:bg-rose-50 text-rose-700 border-rose-200",
-    ghost: "bg-transparent hover:bg-neutral-100 text-neutral-500 border-transparent",
+    primary: "bg-sage-gradient text-cream border-transparent hover:opacity-95",
+    secondary: "bg-white hover:bg-cream-soft text-ink border-sand",
+    danger: "bg-white hover:bg-terra-soft/10 text-terra border-terra-soft/50",
+    ghost: "bg-transparent hover:bg-sand/40 text-ink-soft border-transparent",
   }[tone];
 
   return (
@@ -207,7 +213,10 @@ function ActionButton({
       type="button"
       onClick={onClick}
       disabled={pending}
-      className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-50 ${styles}`}
+      className={cn(
+        "inline-flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm font-medium transition disabled:opacity-50",
+        styles,
+      )}
     >
       {pending ? <Loader2 className="size-4 animate-spin" /> : null}
       {children}

@@ -22,8 +22,6 @@ export function DataStep({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isCash = service.payment_methods.includes("cash");
-
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -95,7 +93,7 @@ export function DataStep({
           {formatDateBR(state.date!)} · {formatTimeBR(new Date(slot.startsIso))}
         </p>
         <p className="mt-1 text-xs text-ink-soft">
-          {isCash ? "Pagamento em dinheiro presencial" : "Pagamento online via Pix ou cartão"}
+          Pagamento no dia · PIX, dinheiro ou cartão
         </p>
       </div>
 
@@ -133,17 +131,12 @@ export function DataStep({
           disabled={submitting}
           className="w-full inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-base font-medium bg-sage-gradient text-cream elev-2 hover:opacity-95 disabled:opacity-60 transition"
         >
-          {submitting
-            ? "Reservando…"
-            : isCash
-              ? "Confirmar reserva"
-              : `Pagar ${formatBRL(service.price_cents)}`}
+          {submitting ? "Reservando…" : "Confirmar reserva"}
         </button>
 
         <p className="text-xs text-ink-soft text-center leading-relaxed">
-          {isCash
-            ? "Sua data fica reservada. Pagamento em dinheiro presencial no dia."
-            : "Você vai pra uma página segura pra pagar via Pix ou cartão. Cancelamento até 24h antes devolve."}
+          Sua data fica reservada na hora. O pagamento é no dia, direto com a Gaby
+          — PIX, dinheiro ou cartão.
         </p>
       </form>
     </section>

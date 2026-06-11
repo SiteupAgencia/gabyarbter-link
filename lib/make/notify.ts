@@ -29,7 +29,7 @@ function paymentLabel(method: string | null): string {
     case "stub":
       return "Teste (stub)";
     default:
-      return "Online";
+      return "No dia (PIX, dinheiro ou cartão)";
   }
 }
 

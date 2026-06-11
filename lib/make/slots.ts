@@ -1,6 +1,7 @@
 import type {
   MakeBlockedDate,
   MakeBusySlot,
+  MakeRecurringBlock,
   MakeService,
   MakeSettings,
   MakeSlot,
@@ -37,6 +38,7 @@ export type CalculateSlotsInput = {
   service: Pick<MakeService, "duration_min">;
   weeklySchedule: MakeWeeklySchedule[];
   blockedDates: MakeBlockedDate[];
+  recurringBlocks?: MakeRecurringBlock[];
   busySlots: MakeBusySlot[];
   settings: Pick<MakeSettings, "buffer_minutes" | "slot_step_minutes" | "min_advance_hours">;
   now: Date;
@@ -47,6 +49,7 @@ export function calculateAvailableSlots({
   service,
   weeklySchedule,
   blockedDates,
+  recurringBlocks = [],
   busySlots,
   settings,
   now,
@@ -58,12 +61,22 @@ export function calculateAvailableSlots({
   const dayBlocks = blockedDates.filter((b) => b.date === dateYmd);
   if (dayBlocks.some((b) => b.all_day)) return [];
 
-  const partialBlocks = dayBlocks
-    .filter((b) => !b.all_day && b.start_time && b.end_time)
-    .map((b) => ({
-      start: combineDateTime(dateYmd, b.start_time!),
-      end: combineDateTime(dateYmd, b.end_time!),
-    }));
+  // Bloqueios pontuais (data) + recorrentes (dia da semana) viram faixas
+  // que removem os slots sobrepostos.
+  const partialBlocks = [
+    ...dayBlocks
+      .filter((b) => !b.all_day && b.start_time && b.end_time)
+      .map((b) => ({
+        start: combineDateTime(dateYmd, b.start_time!),
+        end: combineDateTime(dateYmd, b.end_time!),
+      })),
+    ...recurringBlocks
+      .filter((b) => b.weekday === weekday && b.active)
+      .map((b) => ({
+        start: combineDateTime(dateYmd, b.start_time),
+        end: combineDateTime(dateYmd, b.end_time),
+      })),
+  ];
 
   const busy = busySlots.map((b) => ({
     start: new Date(b.starts_at),

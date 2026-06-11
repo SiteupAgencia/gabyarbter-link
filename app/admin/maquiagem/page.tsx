@@ -1,0 +1,61 @@
+import { requireTeacher } from "@/lib/admin-guard";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { AgendaCalendar } from "./agenda-calendar";
+
+export const dynamic = "force-dynamic";
+
+export default async function MaquiagemAgendaPage() {
+  const { supabase } = await requireTeacher();
+
+  const [{ data: appointments }, { data: services }, { data: blocks }, { data: recurring }] =
+    await Promise.all([
+      supabase
+        .from("make_appointments")
+        .select(`
+          id, client_name, client_phone, client_email,
+          starts_at, ends_at, status,
+          total_cents, deposit_cents, amount_cents,
+          final_paid_at, final_payment_method,
+          payment_method, notes, service_id
+        `)
+        .in("status", ["confirmed", "pending_payment", "completed"])
+        .order("starts_at", { ascending: true }),
+      supabase.from("make_services").select("id, name"),
+      supabase
+        .from("make_blocked_dates")
+        .select("id, date, all_day, start_time, end_time, reason"),
+      supabase
+        .from("make_recurring_blocks")
+        .select("id, weekday, start_time, end_time, reason")
+        .eq("active", true),
+    ]);
+
+  const serviceMap = new Map((services ?? []).map((s) => [s.id, s.name]));
+  const appts = (appointments ?? []).map((a) => ({
+    ...a,
+    serviceName: serviceMap.get(a.service_id) ?? "Maquiagem",
+  }));
+
+  return (
+    <div className="space-y-6 fade-up">
+      <header className="flex items-start justify-between gap-3">
+        <h1 className="font-serif text-[1.75rem] leading-tight tracking-tight text-ink">
+          Agenda
+        </h1>
+        <Link
+          href="/admin/maquiagem/novo"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-sage-gradient text-cream text-sm font-medium elev-1 hover:opacity-95 transition shrink-0"
+        >
+          <Plus className="size-4" /> Novo
+        </Link>
+      </header>
+
+      <AgendaCalendar
+        appointments={appts}
+        oneOffBlocks={blocks ?? []}
+        recurringBlocks={recurring ?? []}
+      />
+    </div>
+  );
+}

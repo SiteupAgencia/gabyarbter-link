@@ -45,6 +45,16 @@ export type MakeBlockedDate = {
   created_at: string;
 };
 
+export type MakeRecurringBlock = {
+  id: string;
+  weekday: number; // 0=domingo … 6=sábado
+  start_time: string; // 'HH:MM:SS'
+  end_time: string;
+  reason: string | null;
+  active: boolean;
+  created_at: string;
+};
+
 export type MakeAppointment = {
   id: string;
   service_id: string;

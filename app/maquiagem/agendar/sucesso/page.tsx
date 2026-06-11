@@ -28,7 +28,7 @@ export default async function SucessoPage({
   const { data: appt } = await admin
     .from("make_appointments")
     .select(
-      "id, starts_at, ends_at, status, amount_cents, payment_method, service:make_services(name)",
+      "id, starts_at, ends_at, status, amount_cents, total_cents, payment_method, service:make_services(name)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -91,21 +91,8 @@ export default async function SucessoPage({
         <Row label="Serviço" value={serviceName} />
         <Row label="Dia" value={capitalize(formatDateBR(startsAt))} />
         <Row label="Horário" value={formatTimeBR(startsAt)} />
-        <Row label="Valor" value={formatBRL(appt.amount_cents)} />
-        <Row
-          label="Pagamento"
-          value={
-            appt.payment_method === "cash"
-              ? "Dinheiro presencial"
-              : appt.payment_method === "stub"
-                ? "Modo teste (não cobrado)"
-                : appt.payment_method === "pix"
-                  ? "Pix"
-                  : appt.payment_method === "credit_card"
-                    ? "Cartão"
-                    : "Confirmado"
-          }
-        />
+        <Row label="Valor" value={formatBRL(appt.total_cents ?? appt.amount_cents)} />
+        <Row label="Pagamento" value="No dia · PIX, dinheiro ou cartão" />
       </div>
 
       <div className="mt-6 flex flex-col gap-2">
