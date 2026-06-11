@@ -45,7 +45,9 @@ export default async function ClientesPage() {
       map.set(phone, c);
     }
 
-    const counts = a.status !== "cancelled" && a.status !== "no_show";
+    // Só conta atendimento REAL (confirmado/concluído). Pedido pending_payment
+    // é solicitação aguardando a Gaby — não infla visitas/receita/próximos.
+    const counts = a.status === "confirmed" || a.status === "completed";
     if (!counts) continue;
 
     const startMs = new Date(a.starts_at).getTime();

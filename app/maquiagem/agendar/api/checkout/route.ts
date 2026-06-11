@@ -14,7 +14,9 @@ type Body = {
 };
 
 // Sem cobrança online: a Gaby prefere receber no dia (PIX, dinheiro ou cartão).
-// O agendamento entra confirmado na hora — reserva o horário e avisa a Gaby.
+// O pedido entra como `pending_payment` = AGUARDANDO A GABY CONFIRMAR. Já reserva
+// o horário (a exclusion constraint cobre pending_payment) e avisa a Gaby; quando
+// ela confirma no painel, dispara o WhatsApp automático pra cliente.
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as Body | null;
   if (!body?.serviceSlug || !body?.startsAtIso || !body?.clientName || !body?.clientPhone) {
@@ -57,12 +59,11 @@ export async function POST(req: Request) {
       client_email: body.clientEmail?.trim() || null,
       starts_at: startsAt.toISOString(),
       ends_at: endsAt.toISOString(),
-      status: "confirmed",
+      status: "pending_payment", // aguardando a Gaby confirmar
       total_cents: service.price_cents,
       deposit_cents: 0, // nada pago online — recebe tudo no dia
       amount_cents: 0,
       payment_method: null,
-      confirmed_at: new Date().toISOString(),
     })
     .select()
     .single();

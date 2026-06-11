@@ -111,15 +111,44 @@ export function AgendaCalendar({
     month: Number(today.slice(5, 7)) - 1,
   });
 
+  // Calendário mostra só o que está confirmado/concluído. Pedidos vão pro topo.
   const apptsByDay = useMemo(() => {
     const m = new Map<string, Appt[]>();
     for (const a of appointments) {
+      if (a.status !== "confirmed" && a.status !== "completed") continue;
       const k = dayKeyBR(a.starts_at);
       if (!m.has(k)) m.set(k, []);
       m.get(k)!.push(a);
     }
     return m;
   }, [appointments]);
+
+  // Pedidos aguardando a Gaby confirmar
+  const pendingAppts = useMemo(
+    () =>
+      appointments
+        .filter((a) => a.status === "pending_payment")
+        .slice()
+        .sort((a, b) => a.starts_at.localeCompare(b.starts_at)),
+    [appointments],
+  );
+
+  // Recorrência: quantas makes (confirmadas/concluídas) cada telefone já tem
+  const realByPhone = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const a of appointments) {
+      if (a.status === "confirmed" || a.status === "completed") {
+        m.set(a.client_phone, (m.get(a.client_phone) ?? 0) + 1);
+      }
+    }
+    return m;
+  }, [appointments]);
+
+  const visitNumberOf = (a: Appt): number => {
+    const real = realByPhone.get(a.client_phone) ?? 0;
+    const prior = real - (a.status === "confirmed" || a.status === "completed" ? 1 : 0);
+    return prior + 1;
+  };
 
   const oneOffByDay = useMemo(() => {
     const m = new Map<string, OneOff[]>();
@@ -153,7 +182,7 @@ export function AgendaCalendar({
   const entries: DayEntry[] = [
     ...selAppts.map((a) => ({
       sort: timeKeyBR(a.starts_at),
-      render: <AppointmentCard key={a.id} appt={a} serviceName={a.serviceName} />,
+      render: <AppointmentCard key={a.id} appt={a} serviceName={a.serviceName} visitNumber={visitNumberOf(a)} />,
     })),
     ...selOneOff.map((b) => ({
       sort: b.all_day ? "00:00" : hm(b.start_time),
@@ -189,6 +218,25 @@ export function AgendaCalendar({
 
   return (
     <div className="space-y-6">
+      {/* Pedidos aguardando confirmação — destaque no topo */}
+      {pendingAppts.length > 0 && (
+        <section>
+          <h2 className="text-xs uppercase tracking-[0.18em] font-semibold mb-3 text-terra">
+            Pedidos pra confirmar · {pendingAppts.length}
+          </h2>
+          <div className="space-y-3">
+            {pendingAppts.map((a) => (
+              <AppointmentCard
+                key={a.id}
+                appt={a}
+                serviceName={a.serviceName}
+                visitNumber={visitNumberOf(a)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Calendário */}
       <div className="rounded-2xl bg-white border border-sand elev-1 p-4">
         <div className="flex items-center justify-between mb-4">

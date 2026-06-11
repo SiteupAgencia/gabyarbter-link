@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { combineDateTime, weekdayInBR } from "@/lib/make/slots";
+import { notifyClientConfirmed } from "@/lib/make/notify";
 
 type PaymentMethod = "cash" | "pix" | "credit_card";
 
@@ -81,6 +82,40 @@ export async function markNoShow(appointmentId: string) {
     })
     .eq("id", appointmentId);
 
+  if (error) throw error;
+  revalidatePath("/admin/maquiagem");
+}
+
+/**
+ * Gaby CONFIRMA o pedido do cliente → status confirmed + dispara o WhatsApp
+ * automático de confirmação pra cliente (a automação do fluxo).
+ */
+export async function confirmBooking(appointmentId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("not_authenticated");
+
+  const { error } = await supabase
+    .from("make_appointments")
+    .update({ status: "confirmed", confirmed_at: new Date().toISOString() })
+    .eq("id", appointmentId);
+  if (error) throw error;
+
+  // Automação: avisa a cliente que tá confirmada (à prova de falha — nunca lança).
+  await notifyClientConfirmed(appointmentId);
+  revalidatePath("/admin/maquiagem");
+}
+
+/** Gaby RECUSA o pedido → cancela e libera o horário. */
+export async function declineBooking(appointmentId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("not_authenticated");
+
+  const { error } = await supabase
+    .from("make_appointments")
+    .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
+    .eq("id", appointmentId);
   if (error) throw error;
   revalidatePath("/admin/maquiagem");
 }

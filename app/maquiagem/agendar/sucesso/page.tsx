@@ -5,7 +5,7 @@ import { formatDateBR, formatTimeBR } from "@/lib/make/slots";
 
 export const dynamic = "force-dynamic";
 
-type SP = { id?: string; status?: string };
+type SP = { id?: string };
 
 export default async function SucessoPage({
   searchParams,
@@ -14,7 +14,6 @@ export default async function SucessoPage({
 }) {
   const sp = await searchParams;
   const id = sp.id;
-  const mpStatus = sp.status; // 'pending' | 'fail' | undefined (=success)
 
   if (!id) return <Shell><Bad message="Agendamento não encontrado." /></Shell>;
 
@@ -42,36 +41,7 @@ export default async function SucessoPage({
     (Array.isArray((appt as any).service) ? (appt as any).service[0]?.name : (appt as any).service?.name) ??
     "Maquiagem";
 
-  if (mpStatus === "fail") {
-    return (
-      <Shell>
-        <h1 className="font-serif text-3xl text-ink">Pagamento não concluído</h1>
-        <p className="mt-3 text-ink-soft">
-          A reserva foi liberada. Você pode tentar de novo a qualquer momento.
-        </p>
-        <Link
-          href="/maquiagem/agendar"
-          className="mt-6 inline-flex h-11 items-center rounded-full px-6 text-sm font-medium bg-sage-gradient text-cream elev-1"
-        >
-          Tentar de novo
-        </Link>
-      </Shell>
-    );
-  }
-
-  if (mpStatus === "pending" || appt.status === "pending_payment") {
-    return (
-      <Shell>
-        <h1 className="font-serif text-3xl text-ink">Aguardando pagamento</h1>
-        <p className="mt-3 text-ink-soft leading-relaxed">
-          Sua reserva pra <strong>{serviceName}</strong> em{" "}
-          <span className="capitalize">{formatDateBR(startsAt)}</span> às{" "}
-          {formatTimeBR(startsAt)} fica guardada por algumas horas. Assim que o pagamento
-          for confirmado, a Gaby recebe a notificação.
-        </p>
-      </Shell>
-    );
-  }
+  const isConfirmed = appt.status === "confirmed" || appt.status === "completed";
 
   return (
     <Shell>
@@ -80,10 +50,12 @@ export default async function SucessoPage({
           <Check />
         </div>
         <h1 className="font-serif text-3xl sm:text-4xl text-ink leading-tight">
-          Tá reservado! 🪷
+          {isConfirmed ? "Tá confirmado! 🪷" : "Pedido enviado! 🪷"}
         </h1>
         <p className="mt-3 text-ink-soft leading-relaxed">
-          A Gaby vai te confirmar no WhatsApp. Não precisa pagar nada agora — é só vir no dia.
+          {isConfirmed
+            ? "A Gaby te espera. Não precisa pagar nada agora — é só vir no dia."
+            : "A Gaby vai te confirmar pelo WhatsApp pertinho. Assim que ela confirmar, tá garantido — e você não paga nada agora."}
         </p>
       </div>
 

@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { markFinalPaid, unmarkFinalPaid, markCompleted, markNoShow } from "./actions";
+import {
+  markFinalPaid,
+  unmarkFinalPaid,
+  markCompleted,
+  markNoShow,
+  confirmBooking,
+  declineBooking,
+} from "./actions";
 import { Check, Phone, Loader2, AlertCircle, CheckCheck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +51,15 @@ function methodLabel(m: string | null): string {
   }
 }
 
-export function AppointmentCard({ appt, serviceName }: { appt: AppointmentRow; serviceName: string }) {
+export function AppointmentCard({
+  appt,
+  serviceName,
+  visitNumber,
+}: {
+  appt: AppointmentRow;
+  serviceName: string;
+  visitNumber?: number;
+}) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -52,10 +67,10 @@ export function AppointmentCard({ appt, serviceName }: { appt: AppointmentRow; s
   const depositCents = appt.deposit_cents ?? appt.amount_cents;
   const remainingCents = Math.max(0, totalCents - depositCents);
   const finalPaid = appt.final_paid_at !== null;
-  const hasDeposit = depositCents > 0 && remainingCents > 0; // entrada online + restante presencial
-  const dueOnDay = !finalPaid && remainingCents > 0; // ainda falta receber no dia
+  const hasDeposit = depositCents > 0 && remainingCents > 0;
+  const dueOnDay = !finalPaid && remainingCents > 0;
   const isCompleted = appt.status === "completed";
-  const isPendingPayment = appt.status === "pending_payment";
+  const isRequest = appt.status === "pending_payment"; // pedido aguardando a Gaby confirmar
 
   const phoneDigits = String(appt.client_phone).replace(/\D/g, "");
 
@@ -71,19 +86,36 @@ export function AppointmentCard({ appt, serviceName }: { appt: AppointmentRow; s
   }
 
   return (
-    <article className="rounded-2xl bg-white border border-sand elev-1 p-4">
+    <article
+      className={cn(
+        "rounded-2xl border elev-1 p-4",
+        isRequest ? "bg-terra-soft/10 border-terra-soft/50" : "bg-white border-sand",
+      )}
+    >
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-serif text-xl tabular-nums text-ink">{timeBR(appt.starts_at)}</span>
+            {isRequest && (
+              <span className="inline-flex items-center gap-1 text-xs text-terra bg-terra-soft/25 border border-terra-soft/50 rounded-full px-2 py-0.5">
+                <AlertCircle className="size-3" /> Pedido · confirme
+              </span>
+            )}
             {isCompleted && (
               <span className="inline-flex items-center gap-1 text-xs text-sage-700 bg-sage-50 border border-sage-100 rounded-full px-2 py-0.5">
                 <CheckCheck className="size-3" /> Concluído
               </span>
             )}
-            {isPendingPayment && (
-              <span className="inline-flex items-center gap-1 text-xs text-terra bg-terra-soft/20 border border-terra-soft/40 rounded-full px-2 py-0.5">
-                <AlertCircle className="size-3" /> Aguardando
+            {visitNumber != null && (
+              <span
+                className={cn(
+                  "inline-flex items-center text-xs rounded-full px-2 py-0.5 border",
+                  visitNumber <= 1
+                    ? "text-sage-700 bg-sage-50 border-sage-100"
+                    : "text-ink-soft bg-sand/40 border-sand",
+                )}
+              >
+                {visitNumber <= 1 ? "✨ cliente nova" : `${visitNumber}ª vez`}
               </span>
             )}
           </div>
@@ -144,51 +176,40 @@ export function AppointmentCard({ appt, serviceName }: { appt: AppointmentRow; s
       )}
 
       {/* Ações */}
-      {!isCompleted && (
+      {isRequest ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <ActionButton onClick={() => run(() => confirmBooking(appt.id))} pending={pending} tone="primary">
+            <Check className="size-4" /> Confirmar
+          </ActionButton>
+          <ActionButton onClick={() => run(() => declineBooking(appt.id))} pending={pending} tone="danger">
+            <X className="size-4" /> Recusar
+          </ActionButton>
+        </div>
+      ) : !isCompleted ? (
         <div className="mt-3 flex flex-wrap gap-2">
           {dueOnDay && (
             <>
-              <ActionButton
-                onClick={() => run(() => markFinalPaid(appt.id, "pix"))}
-                pending={pending}
-                tone="primary"
-              >
+              <ActionButton onClick={() => run(() => markFinalPaid(appt.id, "pix"))} pending={pending} tone="primary">
                 <Check className="size-4" /> Pago via PIX
               </ActionButton>
-              <ActionButton
-                onClick={() => run(() => markFinalPaid(appt.id, "cash"))}
-                pending={pending}
-                tone="primary"
-              >
+              <ActionButton onClick={() => run(() => markFinalPaid(appt.id, "cash"))} pending={pending} tone="primary">
                 <Check className="size-4" /> Pago em dinheiro
               </ActionButton>
             </>
           )}
           {finalPaid && (
-            <ActionButton
-              onClick={() => run(() => unmarkFinalPaid(appt.id))}
-              pending={pending}
-              tone="ghost"
-            >
+            <ActionButton onClick={() => run(() => unmarkFinalPaid(appt.id))} pending={pending} tone="ghost">
               Desfazer pagamento
             </ActionButton>
           )}
-          <ActionButton
-            onClick={() => run(() => markCompleted(appt.id))}
-            pending={pending}
-            tone="secondary"
-          >
+          <ActionButton onClick={() => run(() => markCompleted(appt.id))} pending={pending} tone="secondary">
             <CheckCheck className="size-4" /> Concluir
           </ActionButton>
-          <ActionButton
-            onClick={() => run(() => markNoShow(appt.id))}
-            pending={pending}
-            tone="danger"
-          >
+          <ActionButton onClick={() => run(() => markNoShow(appt.id))} pending={pending} tone="danger">
             <X className="size-4" /> No-show
           </ActionButton>
         </div>
-      )}
+      ) : null}
     </article>
   );
 }
