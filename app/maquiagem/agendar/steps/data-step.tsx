@@ -78,9 +78,9 @@ export function DataStep({
       </button>
 
       <h1 className="font-serif text-3xl sm:text-4xl tracking-tight text-ink">
-        Pra finalizar
+        Quase lá!
       </h1>
-      <p className="mt-2 text-ink-soft">Pra confirmar sua reserva.</p>
+      <p className="mt-2 text-ink-soft">É só pra Gaby confirmar com você no WhatsApp.</p>
 
       <div className="mt-6 rounded-2xl bg-cream-soft/70 border border-sand p-5">
         <div className="flex items-baseline justify-between gap-3">
@@ -114,14 +114,6 @@ export function DataStep({
           autoComplete="tel"
           inputMode="tel"
           required
-        />
-        <Field
-          label="Email (opcional)"
-          value={state.clientEmail}
-          onChange={(v) => update({ clientEmail: v })}
-          placeholder="seu@email.com"
-          autoComplete="email"
-          inputMode="email"
         />
 
         {error && <p className="text-sm text-clay">{error}</p>}

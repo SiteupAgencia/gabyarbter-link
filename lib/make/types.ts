@@ -1,5 +1,7 @@
 export type MakeServiceSlug =
   | "express"
+  | "blindada"
+  // legados (desativados após a consolidação onda15 — mantidos pro histórico)
   | "blindada-online"
   | "blindada-dinheiro";
 

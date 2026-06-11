@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import type { MakeService } from "@/lib/make/types";
 import { formatBRL } from "@/lib/utils";
+
+const WHATSAPP_URL = "https://wa.me/message/E6RZKY2Y72LEB1";
 
 export function ServiceStep({
   services,
@@ -14,55 +17,84 @@ export function ServiceStep({
 }) {
   return (
     <section className="fade-up">
-      <h1 className="font-serif text-3xl sm:text-4xl tracking-tight text-ink">
-        Qual maquiagem?
-      </h1>
-      <p className="mt-2 text-ink-soft">
-        Escolhe a técnica. Depois você escolhe data e horário.
-      </p>
+      {/* Tranquiliza logo de cara: o medo nº1 é "vou ter que pagar agora?" */}
+      <div className="flex items-start gap-3 rounded-2xl bg-sage-50 border border-sage-100 p-4 mb-6">
+        <Shield />
+        <div>
+          <p className="font-medium text-sage-900">Sem pagar nada agora</p>
+          <p className="text-sm text-sage-700 mt-0.5">
+            Você só reserva. O pagamento é no dia, com a Gaby — PIX, dinheiro ou cartão.
+          </p>
+        </div>
+      </div>
 
-      <div className="mt-7 space-y-3">
-        {services.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => onSelect(s)}
-            className={`w-full text-left rounded-2xl border bg-cream p-5 elev-1 transition active:scale-[0.995] hover:elev-2 ${
-              selectedId === s.id
-                ? "border-sage-700 ring-2 ring-sage-200"
-                : "border-sand hover:border-sage-200"
-            }`}
-          >
-            <div className="flex items-baseline justify-between gap-3">
-              <h3 className="font-serif text-xl text-ink leading-tight">{s.name}</h3>
-              <p className="font-serif text-xl text-sage-700 shrink-0">
-                {formatBRL(s.price_cents)}
-              </p>
-            </div>
-            {s.description && (
-              <p className="mt-2 text-sm text-ink-soft leading-relaxed">{s.description}</p>
-            )}
-            <div className="mt-3 flex items-center gap-3 text-xs text-ink-soft">
-              <span className="inline-flex items-center gap-1">
-                <Clock />
-                {s.duration_min} min
-              </span>
-              <span aria-hidden className="h-3 w-px bg-sand" />
-              <span>{paymentLabel(s.payment_methods)}</span>
-            </div>
-          </button>
-        ))}
+      <h1 className="font-serif text-3xl sm:text-4xl tracking-tight text-ink">
+        Qual make você quer?
+      </h1>
+      <p className="mt-2 text-ink-soft">Escolhe a técnica. Data e horário no próximo passo.</p>
+
+      <div className="mt-6 space-y-3">
+        {services.map((s) => {
+          const featured = s.slug === "blindada";
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => onSelect(s)}
+              className={`relative w-full text-left rounded-2xl border bg-cream p-5 elev-1 transition active:scale-[0.995] hover:elev-2 ${
+                selectedId === s.id
+                  ? "border-sage-700 ring-2 ring-sage-200"
+                  : featured
+                    ? "border-sage-300 hover:border-sage-400"
+                    : "border-sand hover:border-sage-200"
+              }`}
+            >
+              {featured && (
+                <span className="absolute -top-2.5 left-5 bg-sage-700 text-cream text-[11px] font-medium rounded-full px-2.5 py-0.5">
+                  Mais escolhida
+                </span>
+              )}
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="font-serif text-xl text-ink leading-tight">{s.name}</h3>
+                <p className="font-serif text-xl text-sage-700 shrink-0">{formatBRL(s.price_cents)}</p>
+              </div>
+              {s.description && (
+                <p className="mt-2 text-sm text-ink-soft leading-relaxed">{s.description}</p>
+              )}
+              <div className="mt-3 flex items-center gap-2.5 text-xs text-ink-soft">
+                <span className="inline-flex items-center gap-1">
+                  <Clock />~{s.duration_min} min
+                </span>
+                <span aria-hidden className="h-3 w-px bg-sand" />
+                <span>paga no dia{featured ? " · cartão +R$15" : ""}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-6 text-center">
+        <Link
+          href={WHATSAPP_URL}
+          target="_blank"
+          rel="noopener"
+          className="inline-flex items-center gap-1.5 text-sm text-sage-700 hover:text-sage-900 transition"
+        >
+          <Whatsapp />
+          Não sabe qual? Chama a Gaby no WhatsApp
+        </Link>
       </div>
     </section>
   );
 }
 
-function paymentLabel(methods: string[]): string {
-  if (methods.includes("cash")) return "Dinheiro presencial";
-  if (methods.includes("pix") && methods.includes("credit_card")) return "Pix ou cartão online";
-  if (methods.includes("pix")) return "Pix online";
-  if (methods.includes("credit_card")) return "Cartão online";
-  return "—";
+function Shield() {
+  return (
+    <svg viewBox="0 0 20 20" className="size-5 shrink-0 text-sage-700 mt-0.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M10 2.5 4 5v5c0 4 6 7.5 6 7.5s6-3.5 6-7.5V5l-6-2.5z" />
+      <path d="M7.5 10l1.8 1.8L13 8" />
+    </svg>
+  );
 }
 
 function Clock() {
@@ -70,6 +102,14 @@ function Clock() {
     <svg viewBox="0 0 16 16" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
       <circle cx="8" cy="8" r="6" />
       <path d="M8 5v3l2 1.5" />
+    </svg>
+  );
+}
+
+function Whatsapp() {
+  return (
+    <svg viewBox="0 0 20 20" className="size-4" fill="currentColor" aria-hidden>
+      <path d="M10 2a8 8 0 0 0-6.9 12L2 18l4.1-1.1A8 8 0 1 0 10 2zm0 14.5a6.5 6.5 0 0 1-3.4-1l-.2-.1-2.4.6.6-2.3-.2-.2A6.5 6.5 0 1 1 10 16.5zm3.6-4.6c-.2-.1-1.1-.5-1.3-.6s-.3-.1-.4.1-.5.6-.6.7-.2.1-.4 0a5.3 5.3 0 0 1-1.6-1 6 6 0 0 1-1.1-1.4c-.1-.2 0-.3.1-.4l.3-.3.1-.3v-.3l-.5-1.3c-.2-.4-.3-.3-.4-.3h-.4a.8.8 0 0 0-.5.2A2.3 2.3 0 0 0 6 9.6a4 4 0 0 0 .8 2 9 9 0 0 0 3.4 3 4.2 4.2 0 0 0 2.4.5 2 2 0 0 0 1.3-.9 1.7 1.7 0 0 0 .1-.9c-.1-.1-.2-.2-.4-.3z" />
     </svg>
   );
 }

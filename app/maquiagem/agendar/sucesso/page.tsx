@@ -80,10 +80,10 @@ export default async function SucessoPage({
           <Check />
         </div>
         <h1 className="font-serif text-3xl sm:text-4xl text-ink leading-tight">
-          Reserva confirmada
+          Tá reservado! 🪷
         </h1>
-        <p className="mt-3 text-ink-soft">
-          A Gaby te espera. Você recebe um lembrete antes.
+        <p className="mt-3 text-ink-soft leading-relaxed">
+          A Gaby vai te confirmar no WhatsApp. Não precisa pagar nada agora — é só vir no dia.
         </p>
       </div>
 
@@ -91,16 +91,25 @@ export default async function SucessoPage({
         <Row label="Serviço" value={serviceName} />
         <Row label="Dia" value={capitalize(formatDateBR(startsAt))} />
         <Row label="Horário" value={formatTimeBR(startsAt)} />
+        <Row label="Onde" value="Estúdio em Erechim/RS" />
         <Row label="Valor" value={formatBRL(appt.total_cents ?? appt.amount_cents)} />
         <Row label="Pagamento" value="No dia · PIX, dinheiro ou cartão" />
       </div>
 
       <div className="mt-6 flex flex-col gap-2">
         <Link
+          href="https://wa.me/message/E6RZKY2Y72LEB1"
+          target="_blank"
+          rel="noopener"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-base font-medium bg-sage-gradient text-cream elev-1 hover:opacity-95"
+        >
+          Falar com a Gaby
+        </Link>
+        <Link
           href="/maquiagem"
           className="inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-medium text-sage-700 border border-sage-200 hover:bg-sage-50"
         >
-          Voltar
+          Voltar pro início
         </Link>
       </div>
     </Shell>
