@@ -1,10 +1,18 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { MakeService } from "@/lib/make/types";
 import { formatBRL } from "@/lib/utils";
 
 const WHATSAPP_URL = "https://wa.me/message/E6RZKY2Y72LEB1";
+
+// Foto de exemplo por serviço (mesmas da landing). Fallback pra serviço novo.
+const SERVICE_IMAGES: Record<string, string> = {
+  express: "/maquiagem/cacheada-express.jpg",
+  blindada: "/maquiagem/completa-tattoo.jpg",
+};
+const FALLBACK_IMAGE = "/maquiagem/hero-makes.jpg";
 
 export function ServiceStep({
   services,
@@ -33,40 +41,59 @@ export function ServiceStep({
       </h1>
       <p className="mt-2 text-ink-soft">Escolhe a técnica. Data e horário no próximo passo.</p>
 
-      <div className="mt-6 space-y-3">
+      <div className="mt-6 space-y-4">
         {services.map((s) => {
           const featured = s.slug === "blindada";
+          const img = SERVICE_IMAGES[s.slug] ?? FALLBACK_IMAGE;
+          const isSelected = selectedId === s.id;
           return (
             <button
               key={s.id}
               type="button"
               onClick={() => onSelect(s)}
-              className={`relative w-full text-left rounded-2xl border bg-cream p-5 elev-1 transition active:scale-[0.995] hover:elev-2 ${
-                selectedId === s.id
+              className={`group block w-full text-left rounded-2xl border bg-cream overflow-hidden elev-1 transition active:scale-[0.995] hover:elev-2 ${
+                isSelected
                   ? "border-sage-700 ring-2 ring-sage-200"
                   : featured
-                    ? "border-sage-300 hover:border-sage-400"
-                    : "border-sand hover:border-sage-200"
+                    ? "border-sage-300"
+                    : "border-sand"
               }`}
             >
-              {featured && (
-                <span className="absolute -top-2.5 left-5 bg-sage-700 text-cream text-[11px] font-medium rounded-full px-2.5 py-0.5">
-                  Mais escolhida
-                </span>
-              )}
-              <div className="flex items-baseline justify-between gap-3">
-                <h3 className="font-serif text-xl text-ink leading-tight">{s.name}</h3>
-                <p className="font-serif text-xl text-sage-700 shrink-0">{formatBRL(s.price_cents)}</p>
+              <div className="relative aspect-[16/10] bg-sand">
+                <Image
+                  src={img}
+                  alt={`Exemplo de ${s.name}`}
+                  fill
+                  sizes="(min-width: 640px) 600px, 100vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                />
+                {featured && (
+                  <span className="absolute top-3 right-3 bg-sage-700 text-cream text-[11px] font-medium rounded-full px-2.5 py-1 elev-1">
+                    Mais escolhida
+                  </span>
+                )}
+                {isSelected && (
+                  <span className="absolute top-3 left-3 inline-flex items-center justify-center size-7 rounded-full bg-sage-700 text-cream elev-1">
+                    <CheckMark />
+                  </span>
+                )}
               </div>
-              {s.description && (
-                <p className="mt-2 text-sm text-ink-soft leading-relaxed">{s.description}</p>
-              )}
-              <div className="mt-3 flex items-center gap-2.5 text-xs text-ink-soft">
-                <span className="inline-flex items-center gap-1">
-                  <Clock />~{s.duration_min} min
-                </span>
-                <span aria-hidden className="h-3 w-px bg-sand" />
-                <span>paga no dia{featured ? " · cartão +R$15" : ""}</span>
+
+              <div className="p-5">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h3 className="font-serif text-xl text-ink leading-tight">{s.name}</h3>
+                  <p className="font-serif text-xl text-sage-700 shrink-0">{formatBRL(s.price_cents)}</p>
+                </div>
+                {s.description && (
+                  <p className="mt-2 text-sm text-ink-soft leading-relaxed">{s.description}</p>
+                )}
+                <div className="mt-3 flex items-center gap-2.5 text-xs text-ink-soft">
+                  <span className="inline-flex items-center gap-1">
+                    <Clock />~{s.duration_min} min
+                  </span>
+                  <span aria-hidden className="h-3 w-px bg-sand" />
+                  <span>paga no dia{featured ? " · cartão +R$15" : ""}</span>
+                </div>
               </div>
             </button>
           );
@@ -93,6 +120,14 @@ function Shield() {
     <svg viewBox="0 0 20 20" className="size-5 shrink-0 text-sage-700 mt-0.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M10 2.5 4 5v5c0 4 6 7.5 6 7.5s6-3.5 6-7.5V5l-6-2.5z" />
       <path d="M7.5 10l1.8 1.8L13 8" />
+    </svg>
+  );
+}
+
+function CheckMark() {
+  return (
+    <svg viewBox="0 0 20 20" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 10.5l4 4L16 6" />
     </svg>
   );
 }
