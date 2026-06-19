@@ -1,75 +1,38 @@
 import { requireTeacher } from "@/lib/admin-guard";
+import { getMakeClientOverview } from "@/lib/make/queries";
 import { ClientesList } from "./clientes-list";
 
 export const dynamic = "force-dynamic";
 
 export type ClientAgg = {
-  phone: string;
+  key: string; // identidade do cliente: uuid do TuaAgenda (migrado) ou telefone E.164
   name: string;
-  visits: number; // agendamentos não cancelados
-  upcoming: number; // agendamentos futuros
+  phone: string | null;
+  visits: number;
+  upcoming: number;
   totalCents: number;
   lastVisitIso: string | null;
   nextIso: string | null;
-  mostRecentIso: string;
+  isMigrated: boolean;
 };
 
 export default async function ClientesPage() {
-  const { supabase } = await requireTeacher();
+  await requireTeacher();
 
-  const { data: appts } = await supabase
-    .from("make_appointments")
-    .select("client_name, client_phone, starts_at, status, total_cents, amount_cents")
-    .order("starts_at", { ascending: false });
-
-  const nowMs = Date.now();
-  const map = new Map<string, ClientAgg>();
-
-  for (const a of appts ?? []) {
-    const phone = a.client_phone;
-    if (!phone) continue;
-
-    let c = map.get(phone);
-    if (!c) {
-      // Primeira ocorrência = agendamento mais recente (ordenado desc).
-      c = {
-        phone,
-        name: a.client_name,
-        visits: 0,
-        upcoming: 0,
-        totalCents: 0,
-        lastVisitIso: null,
-        nextIso: null,
-        mostRecentIso: a.starts_at,
-      };
-      map.set(phone, c);
-    }
-
-    // Só conta atendimento REAL (confirmado/concluído). Pedido pending_payment
-    // é solicitação aguardando a Gaby — não infla visitas/receita/próximos.
-    const counts = a.status === "confirmed" || a.status === "completed";
-    if (!counts) continue;
-
-    const startMs = new Date(a.starts_at).getTime();
-    c.visits += 1;
-    c.totalCents += a.total_cents ?? a.amount_cents ?? 0;
-
-    if (a.status === "completed" || startMs < nowMs) {
-      if (!c.lastVisitIso || startMs > new Date(c.lastVisitIso).getTime()) {
-        c.lastVisitIso = a.starts_at;
-      }
-    }
-    if (startMs >= nowMs && a.status !== "completed") {
-      c.upcoming += 1;
-      if (!c.nextIso || startMs < new Date(c.nextIso).getTime()) {
-        c.nextIso = a.starts_at;
-      }
-    }
-  }
-
-  const clients = Array.from(map.values()).sort(
-    (a, b) => new Date(b.mostRecentIso).getTime() - new Date(a.mostRecentIso).getTime(),
-  );
+  // Lê a view make_client_overview: 1 linha por cliente (identidade = id OU telefone),
+  // já agregada no servidor e incluindo quem NÃO tem telefone (migrados do TuaAgenda).
+  const rows = await getMakeClientOverview();
+  const clients: ClientAgg[] = rows.map((r) => ({
+    key: r.client_key,
+    name: r.name,
+    phone: r.phone,
+    visits: r.visits,
+    upcoming: r.upcoming,
+    totalCents: r.total_cents,
+    lastVisitIso: r.last_visit,
+    nextIso: r.next_at,
+    isMigrated: r.is_migrated,
+  }));
 
   return (
     <div className="space-y-6 fade-up">

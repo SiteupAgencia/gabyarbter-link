@@ -89,3 +89,90 @@ export async function getMakeSettings() {
   if (error) throw error;
   return buildSettings(data ?? []);
 }
+
+// ---- Paginação: o PostgREST limita o nº de linhas por request; pra somar
+//      faturamento ou listar todos os clientes sem truncar, paginamos por range. ----
+async function fetchAllRange<T>(
+  build: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+  page = 1000,
+): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; from < 200_000; from += page) {
+    const { data, error } = await build(from, from + page - 1);
+    if (error) throw new Error(error.message);
+    const rows = data ?? [];
+    out.push(...rows);
+    if (rows.length < page) break;
+  }
+  return out;
+}
+
+export type MakeClientRow = {
+  client_key: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  birthday: string | null;
+  city: string | null;
+  tuaagenda_id: string | null;
+  is_migrated: boolean;
+  visits: number;
+  upcoming: number;
+  total_cents: number;
+  last_visit: string | null;
+  next_at: string | null;
+  most_recent: string;
+};
+
+/** Lista do CRM: uma linha por cliente (identidade = id ou telefone), inclui quem não tem telefone. */
+export async function getMakeClientOverview(): Promise<MakeClientRow[]> {
+  const supabase = await createClient();
+  return fetchAllRange<MakeClientRow>((from, to) =>
+    supabase
+      .from("make_client_overview")
+      .select("*")
+      .order("most_recent", { ascending: false })
+      .range(from, to),
+  );
+}
+
+/** Detalhe de um cliente por client_key (uuid do TuaAgenda OU telefone E.164). */
+export async function getMakeClientDetail(key: string) {
+  const supabase = await createClient();
+  const byId = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(key); // uuid => migrado; senão telefone
+  const apptQuery = supabase
+    .from("make_appointments")
+    .select(
+      "id, client_name, client_phone, starts_at, status, total_cents, amount_cents, notes, final_paid_at, final_payment_method, service:make_services(name)",
+    )
+    .order("starts_at", { ascending: false });
+
+  const [{ data: overview }, { data: appts }] = await Promise.all([
+    supabase.from("make_client_overview").select("*").eq("client_key", key).maybeSingle(),
+    byId ? apptQuery.eq("tuaagenda_client_id", key) : apptQuery.eq("client_phone", key),
+  ]);
+  return { overview: (overview as MakeClientRow | null) ?? null, appts: appts ?? [] };
+}
+
+export type MakeRevenueRow = {
+  id: string;
+  client_name: string;
+  starts_at: string;
+  status: string;
+  total_cents: number | null;
+  amount_cents: number | null;
+  service_id: string;
+};
+
+/** Atendimentos pro Faturamento: todos confirmados/concluídos (paginado, sem truncar em 1000). */
+export async function getMakeRevenueAppointments(): Promise<MakeRevenueRow[]> {
+  const supabase = await createClient();
+  return fetchAllRange<MakeRevenueRow>((from, to) =>
+    supabase
+      .from("make_appointments")
+      .select("id, client_name, starts_at, status, total_cents, amount_cents, service_id")
+      .in("status", ["confirmed", "completed"])
+      .order("starts_at", { ascending: false })
+      .range(from, to),
+  );
+}

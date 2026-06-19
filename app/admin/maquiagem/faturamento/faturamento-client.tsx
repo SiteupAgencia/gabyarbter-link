@@ -206,7 +206,7 @@ export function FaturamentoClient({ appointments }: { appointments: Appt[] }) {
           </div>
         ) : (
           <ul className="space-y-2">
-            {inPeriod.map((a) => (
+            {inPeriod.slice(0, 80).map((a) => (
               <li
                 key={a.id}
                 className="flex items-center justify-between gap-3 rounded-xl bg-white border border-sand p-3.5"
@@ -230,6 +230,11 @@ export function FaturamentoClient({ appointments }: { appointments: Appt[] }) {
               </li>
             ))}
           </ul>
+        )}
+        {inPeriod.length > 80 && (
+          <p className="text-xs text-ink-mute text-center pt-2">
+            mostrando 80 de {inPeriod.length} atendimentos · os totais acima consideram todos
+          </p>
         )}
       </section>
     </div>

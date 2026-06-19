@@ -26,7 +26,7 @@ export function ClientesList({ clients }: { clients: ClientAgg[] }) {
       list = list.filter(
         (c) =>
           c.name.toLowerCase().includes(q) ||
-          (qd.length > 0 && c.phone.replace(/\D/g, "").includes(qd)),
+          (qd.length > 0 && (c.phone ?? "").replace(/\D/g, "").includes(qd)),
       );
     }
     return list;
@@ -89,12 +89,12 @@ export function ClientesList({ clients }: { clients: ClientAgg[] }) {
                   ? `última ${formatDistanceToNow(new Date(c.lastVisitIso), { locale: ptBR, addSuffix: true })}`
                   : "sem atendimentos";
             return (
-              <li key={c.phone}>
+              <li key={c.key}>
                 <Link
-                  href={`/admin/maquiagem/clientes/${encodeURIComponent(c.phone)}`}
+                  href={`/admin/maquiagem/clientes/${encodeURIComponent(c.key)}`}
                   className="flex items-center gap-3 rounded-2xl bg-white border border-sand elev-1 hover:elev-2 transition-all p-3.5"
                 >
-                  <Avatar name={c.name} seed={c.phone} />
+                  <Avatar name={c.name} seed={c.key} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-medium truncate text-ink">{c.name}</p>

@@ -1,4 +1,5 @@
 import { requireTeacher } from "@/lib/admin-guard";
+import { getMakeClientDetail } from "@/lib/make/queries";
 import Link from "next/link";
 import { Phone, CalendarClock } from "lucide-react";
 import { formatBRL, formatPhoneBR } from "@/lib/utils";
@@ -33,16 +34,14 @@ export default async function ClienteDetailPage({
 }: {
   params: Promise<{ phone: string }>;
 }) {
-  const { phone } = await params;
-  const { supabase } = await requireTeacher();
+  // O segmento [phone] carrega o client_key: telefone E.164 OU id do TuaAgenda (migrado).
+  const { phone: rawKey } = await params;
+  const key = decodeURIComponent(rawKey);
+  await requireTeacher();
 
-  const { data: appts } = await supabase
-    .from("make_appointments")
-    .select("id, client_name, client_phone, starts_at, status, total_cents, amount_cents, notes, final_paid_at, final_payment_method, service:make_services(name)")
-    .eq("client_phone", phone)
-    .order("starts_at", { ascending: false });
+  const { overview, appts } = await getMakeClientDetail(key);
 
-  if (!appts || appts.length === 0) {
+  if (!overview && appts.length === 0) {
     return (
       <div className="space-y-4 fade-up">
         <Link href="/admin/maquiagem/clientes" className="inline-flex text-sm text-ink-soft hover:text-ink transition">
@@ -53,12 +52,15 @@ export default async function ClienteDetailPage({
     );
   }
 
-  const name = appts[0].client_name;
-  const phoneDigits = phone.replace(/\D/g, "");
+  const name = overview?.name ?? appts[0]?.client_name ?? "Cliente";
+  const phone = overview?.phone ?? appts[0]?.client_phone ?? null;
+  const phoneDigits = (phone ?? "").replace(/\D/g, "");
   const nowMs = Date.now();
 
   const active = appts.filter((a) => a.status !== "cancelled" && a.status !== "no_show");
-  const totalCents = active.reduce((sum, a) => sum + (a.total_cents ?? a.amount_cents ?? 0), 0);
+  const totalCents =
+    overview?.total_cents ??
+    active.reduce((sum, a) => sum + (a.total_cents ?? a.amount_cents ?? 0), 0);
   const next = active
     .filter((a) => new Date(a.starts_at).getTime() >= nowMs && a.status !== "completed")
     .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())[0];
@@ -71,26 +73,31 @@ export default async function ClienteDetailPage({
 
       {/* Cabeçalho */}
       <div className="flex items-center gap-4">
-        <Avatar name={name} seed={phone} size={56} />
+        <Avatar name={name} seed={key} size={56} />
         <div className="min-w-0 flex-1">
           <h1 className="font-serif text-2xl text-ink leading-tight truncate">{name}</h1>
-          <p className="text-sm text-ink-soft mt-0.5">{formatPhoneBR(phone)}</p>
+          <p className="text-sm text-ink-soft mt-0.5">
+            {phone ? formatPhoneBR(phone) : "sem telefone"}
+            {overview?.is_migrated && <span className="ml-2 text-xs text-ink-mute">· migrado</span>}
+          </p>
         </div>
-        <a
-          href={`https://wa.me/${phoneDigits}`}
-          target="_blank"
-          rel="noopener"
-          className="inline-flex items-center gap-1.5 rounded-full bg-sage-gradient text-cream px-4 py-2 text-sm font-medium elev-1 hover:opacity-95 transition shrink-0"
-        >
-          <Phone className="size-4" /> WhatsApp
-        </a>
+        {phoneDigits && (
+          <a
+            href={`https://wa.me/${phoneDigits}`}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-1.5 rounded-full bg-sage-gradient text-cream px-4 py-2 text-sm font-medium elev-1 hover:opacity-95 transition shrink-0"
+          >
+            <Phone className="size-4" /> WhatsApp
+          </a>
+        )}
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl bg-white border border-sand elev-1 p-4">
           <p className="text-xs uppercase tracking-wider text-ink-soft">Atendimentos</p>
-          <p className="font-serif text-2xl text-ink mt-1 tabular-nums">{active.length}</p>
+          <p className="font-serif text-2xl text-ink mt-1 tabular-nums">{overview?.visits ?? active.length}</p>
         </div>
         <div className="rounded-2xl bg-white border border-sand elev-1 p-4">
           <p className="text-xs uppercase tracking-wider text-ink-soft">Total</p>
@@ -114,34 +121,38 @@ export default async function ClienteDetailPage({
       {/* Histórico */}
       <section>
         <h2 className="text-xs uppercase tracking-[0.18em] font-semibold mb-3 text-ink-soft">Histórico</h2>
-        <ul className="space-y-2">
-          {appts.map((a) => {
-            const st = STATUS[a.status] ?? { label: a.status, cls: "text-ink-mute bg-sand/40 border-sand" };
-            const cancelled = a.status === "cancelled" || a.status === "no_show";
-            return (
-              <li
-                key={a.id}
-                className="flex items-center justify-between gap-3 rounded-2xl bg-white border border-sand elev-1 p-3.5"
-              >
-                <div className="min-w-0">
-                  <p className={`font-medium capitalize ${cancelled ? "text-ink-mute line-through" : "text-ink"}`}>
-                    {dateTimeBR(a.starts_at)}
-                  </p>
-                  <p className="text-sm text-ink-soft mt-0.5 truncate">{serviceNameOf(a)}</p>
-                  {a.notes && <p className="text-xs text-ink-soft italic mt-0.5">&ldquo;{a.notes}&rdquo;</p>}
-                </div>
-                <div className="text-right shrink-0">
-                  <p className={`font-medium tabular-nums ${cancelled ? "text-ink-mute" : "text-ink"}`}>
-                    {formatBRL(a.total_cents ?? a.amount_cents ?? 0)}
-                  </p>
-                  <span className={`inline-flex items-center text-[11px] rounded-full border px-2 py-0.5 mt-1 ${st.cls}`}>
-                    {st.label}
-                  </span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        {appts.length === 0 ? (
+          <p className="text-sm text-ink-soft">Sem atendimentos registrados ainda.</p>
+        ) : (
+          <ul className="space-y-2">
+            {appts.map((a) => {
+              const st = STATUS[a.status] ?? { label: a.status, cls: "text-ink-mute bg-sand/40 border-sand" };
+              const cancelled = a.status === "cancelled" || a.status === "no_show";
+              return (
+                <li
+                  key={a.id}
+                  className="flex items-center justify-between gap-3 rounded-2xl bg-white border border-sand elev-1 p-3.5"
+                >
+                  <div className="min-w-0">
+                    <p className={`font-medium capitalize ${cancelled ? "text-ink-mute line-through" : "text-ink"}`}>
+                      {dateTimeBR(a.starts_at)}
+                    </p>
+                    <p className="text-sm text-ink-soft mt-0.5 truncate">{serviceNameOf(a)}</p>
+                    {a.notes && <p className="text-xs text-ink-soft italic mt-0.5">&ldquo;{a.notes}&rdquo;</p>}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className={`font-medium tabular-nums ${cancelled ? "text-ink-mute" : "text-ink"}`}>
+                      {formatBRL(a.total_cents ?? a.amount_cents ?? 0)}
+                    </p>
+                    <span className={`inline-flex items-center text-[11px] rounded-full border px-2 py-0.5 mt-1 ${st.cls}`}>
+                      {st.label}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
     </div>
   );

@@ -8,6 +8,10 @@ export const dynamic = "force-dynamic";
 export default async function MaquiagemAgendaPage() {
   const { supabase } = await requireTeacher();
 
+  // Agenda é forward-looking: recentes (90 dias) + futuros. O histórico migrado
+  // (milhares de atendimentos antigos) vive no CRM/Faturamento, não aqui.
+  const since = new Date(Date.now() - 90 * 24 * 3600_000).toISOString();
+
   const [{ data: appointments }, { data: services }, { data: blocks }, { data: recurring }] =
     await Promise.all([
       supabase
@@ -20,6 +24,7 @@ export default async function MaquiagemAgendaPage() {
           payment_method, notes, service_id
         `)
         .in("status", ["confirmed", "pending_payment", "completed"])
+        .gte("starts_at", since)
         .order("starts_at", { ascending: true }),
       supabase.from("make_services").select("id, name"),
       supabase
@@ -34,6 +39,7 @@ export default async function MaquiagemAgendaPage() {
   const serviceMap = new Map((services ?? []).map((s) => [s.id, s.name]));
   const appts = (appointments ?? []).map((a) => ({
     ...a,
+    client_phone: a.client_phone ?? "", // migrados podem não ter telefone
     serviceName: serviceMap.get(a.service_id) ?? "Maquiagem",
   }));
 

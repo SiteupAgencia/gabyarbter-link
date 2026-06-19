@@ -4,19 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { combineDateTime, weekdayInBR } from "@/lib/make/slots";
 import { notifyClientConfirmed } from "@/lib/make/notify";
+import { toE164 } from "@/lib/make/phone";
 
 type PaymentMethod = "cash" | "pix" | "credit_card";
 
 type ActionResult = { ok: true; id: string } | { ok: false; error: string };
-
-/** Normaliza telefone BR pra E.164 (+55...). */
-function normalizePhone(raw: string): string {
-  const digits = raw.replace(/\D/g, "");
-  if (!digits) return "";
-  if (digits.startsWith("55")) return `+${digits}`;
-  if (digits.length >= 10) return `+55${digits}`;
-  return `+${digits}`;
-}
 
 export async function markFinalPaid(appointmentId: string, method: PaymentMethod) {
   const supabase = await createClient();
@@ -139,9 +131,9 @@ export async function createManualAppointment(input: {
   if (!user) return { ok: false, error: "Sessão expirada — entre de novo." };
 
   const name = input.clientName.trim();
-  const phone = normalizePhone(input.clientPhone);
+  const phone = toE164(input.clientPhone);
   if (!name) return { ok: false, error: "Informe o nome da cliente." };
-  if (!phone) return { ok: false, error: "Informe um telefone válido." };
+  if (!phone) return { ok: false, error: "Informe um telefone válido (com DDD)." };
   if (!input.serviceId) return { ok: false, error: "Escolha o serviço." };
   if (!input.dateYmd || !input.startTime) return { ok: false, error: "Escolha data e horário." };
 

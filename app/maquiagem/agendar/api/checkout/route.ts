@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMakeServiceBySlug, getMakeSettings } from "@/lib/make/queries";
 import { notifyGabyNewBooking } from "@/lib/make/notify";
+import { toE164 } from "@/lib/make/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "too_soon" }, { status: 400 });
   }
 
+  const clientPhone = toE164(body.clientPhone);
+  if (!clientPhone) {
+    return NextResponse.json({ ok: false, error: "invalid_phone" }, { status: 400 });
+  }
+
   const endsAt = new Date(startsAt.getTime() + service.duration_min * 60_000);
 
   let admin;
@@ -55,7 +61,7 @@ export async function POST(req: Request) {
     .insert({
       service_id: service.id,
       client_name: body.clientName.trim(),
-      client_phone: normalizePhone(body.clientPhone),
+      client_phone: clientPhone,
       client_email: body.clientEmail?.trim() || null,
       starts_at: startsAt.toISOString(),
       ends_at: endsAt.toISOString(),
@@ -83,11 +89,4 @@ export async function POST(req: Request) {
   await notifyGabyNewBooking(appt.id);
 
   return NextResponse.json({ ok: true, appointmentId: appt.id });
-}
-
-function normalizePhone(raw: string): string {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.startsWith("55")) return `+${digits}`;
-  if (digits.length >= 10) return `+55${digits}`;
-  return raw;
 }

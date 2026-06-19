@@ -1,4 +1,5 @@
 import { requireTeacher } from "@/lib/admin-guard";
+import { getMakeRevenueAppointments } from "@/lib/make/queries";
 import { FaturamentoClient } from "./faturamento-client";
 
 export const dynamic = "force-dynamic";
@@ -6,12 +7,8 @@ export const dynamic = "force-dynamic";
 export default async function FaturamentoPage() {
   const { supabase } = await requireTeacher();
 
-  const [{ data: appointments }, { data: services }] = await Promise.all([
-    supabase
-      .from("make_appointments")
-      .select("id, client_name, starts_at, status, total_cents, amount_cents, service_id")
-      .in("status", ["confirmed", "completed"])
-      .order("starts_at", { ascending: false }),
+  const [appointments, { data: services }] = await Promise.all([
+    getMakeRevenueAppointments(), // paginado: soma TODO o histórico, sem truncar em 1000
     supabase.from("make_services").select("id, name"),
   ]);
 
