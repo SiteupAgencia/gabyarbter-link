@@ -22,8 +22,6 @@ export function DataStep({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isCash = service.payment_methods.includes("cash");
-
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -80,9 +78,9 @@ export function DataStep({
       </button>
 
       <h1 className="font-serif text-3xl sm:text-4xl tracking-tight text-ink">
-        Pra finalizar
+        Quase lá!
       </h1>
-      <p className="mt-2 text-ink-soft">Pra confirmar sua reserva.</p>
+      <p className="mt-2 text-ink-soft">É só pra Gaby confirmar com você no WhatsApp.</p>
 
       <div className="mt-6 rounded-2xl bg-cream-soft/70 border border-sand p-5">
         <div className="flex items-baseline justify-between gap-3">
@@ -95,7 +93,7 @@ export function DataStep({
           {formatDateBR(state.date!)} · {formatTimeBR(new Date(slot.startsIso))}
         </p>
         <p className="mt-1 text-xs text-ink-soft">
-          {isCash ? "Pagamento em dinheiro presencial" : "Pagamento online via Pix ou cartão"}
+          Pagamento no dia · PIX, dinheiro ou cartão
         </p>
       </div>
 
@@ -117,14 +115,6 @@ export function DataStep({
           inputMode="tel"
           required
         />
-        <Field
-          label="Email (opcional)"
-          value={state.clientEmail}
-          onChange={(v) => update({ clientEmail: v })}
-          placeholder="seu@email.com"
-          autoComplete="email"
-          inputMode="email"
-        />
 
         {error && <p className="text-sm text-clay">{error}</p>}
 
@@ -133,17 +123,12 @@ export function DataStep({
           disabled={submitting}
           className="w-full inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-base font-medium bg-sage-gradient text-cream elev-2 hover:opacity-95 disabled:opacity-60 transition"
         >
-          {submitting
-            ? "Reservando…"
-            : isCash
-              ? "Confirmar reserva"
-              : `Pagar ${formatBRL(service.price_cents)}`}
+          {submitting ? "Reservando…" : "Confirmar reserva"}
         </button>
 
         <p className="text-xs text-ink-soft text-center leading-relaxed">
-          {isCash
-            ? "Sua data fica reservada. Pagamento em dinheiro presencial no dia."
-            : "Você vai pra uma página segura pra pagar via Pix ou cartão. Cancelamento até 24h antes devolve."}
+          Sua data fica reservada na hora. O pagamento é no dia, direto com a Gaby
+          — PIX, dinheiro ou cartão.
         </p>
       </form>
     </section>

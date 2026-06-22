@@ -5,7 +5,7 @@ import { formatDateBR, formatTimeBR } from "@/lib/make/slots";
 
 export const dynamic = "force-dynamic";
 
-type SP = { id?: string; status?: string };
+type SP = { id?: string };
 
 export default async function SucessoPage({
   searchParams,
@@ -14,7 +14,6 @@ export default async function SucessoPage({
 }) {
   const sp = await searchParams;
   const id = sp.id;
-  const mpStatus = sp.status; // 'pending' | 'fail' | undefined (=success)
 
   if (!id) return <Shell><Bad message="Agendamento não encontrado." /></Shell>;
 
@@ -28,7 +27,7 @@ export default async function SucessoPage({
   const { data: appt } = await admin
     .from("make_appointments")
     .select(
-      "id, starts_at, ends_at, status, amount_cents, payment_method, service:make_services(name)",
+      "id, starts_at, ends_at, status, amount_cents, total_cents, payment_method, service:make_services(name)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -42,36 +41,7 @@ export default async function SucessoPage({
     (Array.isArray((appt as any).service) ? (appt as any).service[0]?.name : (appt as any).service?.name) ??
     "Maquiagem";
 
-  if (mpStatus === "fail") {
-    return (
-      <Shell>
-        <h1 className="font-serif text-3xl text-ink">Pagamento não concluído</h1>
-        <p className="mt-3 text-ink-soft">
-          A reserva foi liberada. Você pode tentar de novo a qualquer momento.
-        </p>
-        <Link
-          href="/maquiagem/agendar"
-          className="mt-6 inline-flex h-11 items-center rounded-full px-6 text-sm font-medium bg-sage-gradient text-cream elev-1"
-        >
-          Tentar de novo
-        </Link>
-      </Shell>
-    );
-  }
-
-  if (mpStatus === "pending" || appt.status === "pending_payment") {
-    return (
-      <Shell>
-        <h1 className="font-serif text-3xl text-ink">Aguardando pagamento</h1>
-        <p className="mt-3 text-ink-soft leading-relaxed">
-          Sua reserva pra <strong>{serviceName}</strong> em{" "}
-          <span className="capitalize">{formatDateBR(startsAt)}</span> às{" "}
-          {formatTimeBR(startsAt)} fica guardada por algumas horas. Assim que o pagamento
-          for confirmado, a Gaby recebe a notificação.
-        </p>
-      </Shell>
-    );
-  }
+  const isConfirmed = appt.status === "confirmed" || appt.status === "completed";
 
   return (
     <Shell>
@@ -80,10 +50,12 @@ export default async function SucessoPage({
           <Check />
         </div>
         <h1 className="font-serif text-3xl sm:text-4xl text-ink leading-tight">
-          Reserva confirmada
+          {isConfirmed ? "Tá confirmado! 🪷" : "Pedido enviado! 🪷"}
         </h1>
-        <p className="mt-3 text-ink-soft">
-          A Gaby te espera. Você recebe um lembrete antes.
+        <p className="mt-3 text-ink-soft leading-relaxed">
+          {isConfirmed
+            ? "A Gaby te espera. Não precisa pagar nada agora — é só vir no dia."
+            : "A Gaby vai te confirmar pelo WhatsApp pertinho. Assim que ela confirmar, tá garantido — e você não paga nada agora."}
         </p>
       </div>
 
@@ -91,29 +63,25 @@ export default async function SucessoPage({
         <Row label="Serviço" value={serviceName} />
         <Row label="Dia" value={capitalize(formatDateBR(startsAt))} />
         <Row label="Horário" value={formatTimeBR(startsAt)} />
-        <Row label="Valor" value={formatBRL(appt.amount_cents)} />
-        <Row
-          label="Pagamento"
-          value={
-            appt.payment_method === "cash"
-              ? "Dinheiro presencial"
-              : appt.payment_method === "stub"
-                ? "Modo teste (não cobrado)"
-                : appt.payment_method === "pix"
-                  ? "Pix"
-                  : appt.payment_method === "credit_card"
-                    ? "Cartão"
-                    : "Confirmado"
-          }
-        />
+        <Row label="Onde" value="Estúdio em Erechim/RS" />
+        <Row label="Valor" value={formatBRL(appt.total_cents ?? appt.amount_cents)} />
+        <Row label="Pagamento" value="No dia · PIX, dinheiro ou cartão" />
       </div>
 
       <div className="mt-6 flex flex-col gap-2">
         <Link
+          href="https://wa.me/message/E6RZKY2Y72LEB1"
+          target="_blank"
+          rel="noopener"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-base font-medium bg-sage-gradient text-cream elev-1 hover:opacity-95"
+        >
+          Falar com a Gaby
+        </Link>
+        <Link
           href="/maquiagem"
           className="inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-medium text-sage-700 border border-sage-200 hover:bg-sage-50"
         >
-          Voltar
+          Voltar pro início
         </Link>
       </div>
     </Shell>

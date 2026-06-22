@@ -1,5 +1,7 @@
 export type MakeServiceSlug =
   | "express"
+  | "blindada"
+  // legados (desativados após a consolidação onda15 — mantidos pro histórico)
   | "blindada-online"
   | "blindada-dinheiro";
 
@@ -42,6 +44,16 @@ export type MakeBlockedDate = {
   start_time: string | null;
   end_time: string | null;
   reason: string | null;
+  created_at: string;
+};
+
+export type MakeRecurringBlock = {
+  id: string;
+  weekday: number; // 0=domingo … 6=sábado
+  start_time: string; // 'HH:MM:SS'
+  end_time: string;
+  reason: string | null;
+  active: boolean;
   created_at: string;
 };
 

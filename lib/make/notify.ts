@@ -18,24 +18,9 @@ function formatBRL(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function paymentLabel(method: string | null): string {
-  switch (method) {
-    case "cash":
-      return "Dinheiro (presencial)";
-    case "pix":
-      return "Pix";
-    case "credit_card":
-      return "Cartão";
-    case "stub":
-      return "Teste (stub)";
-    default:
-      return "Online";
-  }
-}
-
 /**
- * Avisa a Gaby (WhatsApp) que entrou um novo agendamento de maquiagem confirmado.
- * À prova de falha: nunca lança — a notificação não pode quebrar checkout/webhook.
+ * Avisa a Gaby (WhatsApp) que entrou um novo PEDIDO de maquiagem (aguardando
+ * ela confirmar no painel). À prova de falha: nunca lança.
  */
 export async function notifyGabyNewBooking(appointmentId: string): Promise<void> {
   try {
@@ -64,57 +49,66 @@ export async function notifyGabyNewBooking(appointmentId: string): Promise<void>
       .single();
     const serviceName = service?.name ?? "Maquiagem";
 
-    const phoneDigits = String(appt.client_phone).replace(/\D/g, "");
     const firstName = String(appt.client_name).trim().split(/\s+/)[0];
     const when = formatWhen(appt.starts_at);
-
     const totalCents = appt.total_cents ?? appt.amount_cents;
-    const depositCents = appt.deposit_cents ?? appt.amount_cents;
-    const remainingCents = Math.max(0, totalCents - depositCents);
-    const hasDeposit = depositCents > 0 && remainingCents > 0;
-
-    // Linhas pra cliente — divide entrada e restante só quando faz sentido
-    const clientMoneyLines = hasDeposit
-      ? [
-          `Entrada de ${formatBRL(depositCents)} já tá paga ✓`,
-          `No dia, falta receber ${formatBRL(remainingCents)} (PIX ou dinheiro).`,
-        ]
-      : [`Valor: ${formatBRL(totalCents)} (no dia).`];
-
-    // Mensagem pronta pra Gaby enviar à cliente
-    const confirmMsg = [
-      `Oi ${firstName}! Aqui é a Gaby ✨`,
-      ``,
-      `Confirmando sua ${serviceName} ${when}.`,
-      `Te espero no meu estúdio em Erechim 🪷`,
-      ``,
-      ...clientMoneyLines,
-      ``,
-      `Qualquer dúvida ou mudança, é só me chamar!`,
-    ].join("\n");
-    const confirmLink = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(confirmMsg)}`;
-
-    // Linha de valor pra Gaby — discrimina entrada e restante quando há
-    const gabyMoneyLine = hasDeposit
-      ? `💰 ${formatBRL(totalCents)} · entrada ${formatBRL(depositCents)} ✓ · falta ${formatBRL(remainingCents)}`
-      : `💰 ${formatBRL(totalCents)} · ${paymentLabel(appt.payment_method)}`;
 
     const text = [
-      `🌸 *Novo agendamento de maquiagem!*`,
+      `🌸 *Novo pedido de maquiagem!*`,
       ``,
       `*${appt.client_name}*`,
       `${serviceName}`,
       `🗓️ ${when}`,
-      gabyMoneyLine,
+      `💰 ${formatBRL(totalCents)} · no dia`,
       `📱 ${appt.client_phone}`,
       ``,
-      `✅ *Confirmar com a ${firstName}* — toca, revisa e envia:`,
-      confirmLink,
+      `Confirme no painel pra avisar a ${firstName} automaticamente:`,
+      `https://gabyarbter.com.br/admin/maquiagem`,
     ].join("\n");
 
     await sendWhatsAppText(gaby, text);
   } catch (e) {
     console.error("[notify] erro ao avisar Gaby:", e instanceof Error ? e.message : e);
+  }
+}
+
+/**
+ * Dispara o WhatsApp de CONFIRMAÇÃO pra cliente quando a Gaby aprova o pedido
+ * no painel. É a automação do fluxo de confirmação. À prova de falha: nunca lança.
+ */
+export async function notifyClientConfirmed(appointmentId: string): Promise<void> {
+  try {
+    const admin = createAdminClient();
+    const { data: appt } = await admin
+      .from("make_appointments")
+      .select("client_name, client_phone, starts_at, total_cents, amount_cents, service_id")
+      .eq("id", appointmentId)
+      .single();
+    if (!appt) return;
+
+    const { data: service } = await admin
+      .from("make_services")
+      .select("name")
+      .eq("id", appt.service_id)
+      .single();
+    const serviceName = service?.name ?? "maquiagem";
+    const firstName = String(appt.client_name).trim().split(/\s+/)[0];
+    const totalCents = appt.total_cents ?? appt.amount_cents;
+
+    const text = [
+      `Oi ${firstName}! Aqui é a Gaby ✨`,
+      ``,
+      `Tá confirmada sua *${serviceName}* ${formatWhen(appt.starts_at)}! 🪷`,
+      `Te espero no meu estúdio em Erechim.`,
+      ``,
+      `No dia, é só trazer ${formatBRL(totalCents)} (PIX, dinheiro ou cartão).`,
+      ``,
+      `Qualquer mudança, é só me chamar por aqui 💛`,
+    ].join("\n");
+
+    await sendWhatsAppText(appt.client_phone, text);
+  } catch (e) {
+    console.error("[notify] erro ao confirmar com a cliente:", e instanceof Error ? e.message : e);
   }
 }
 
