@@ -22,11 +22,11 @@ function serviceNameOf(row: { service?: unknown }): string {
 }
 
 const STATUS: Record<string, { label: string; cls: string }> = {
-  confirmed: { label: "Confirmado", cls: "text-sage-700 bg-sage-50 border-sage-100" },
-  completed: { label: "Concluído", cls: "text-sage-700 bg-sage-50 border-sage-100" },
-  pending_payment: { label: "Aguardando", cls: "text-terra bg-terra-soft/20 border-terra-soft/40" },
-  cancelled: { label: "Cancelado", cls: "text-ink-mute bg-sand/40 border-sand" },
-  no_show: { label: "No-show", cls: "text-ink-mute bg-sand/40 border-sand" },
+  confirmed: { label: "Confirmado", cls: "text-sage-700 bg-sage-50" },
+  completed: { label: "Concluído", cls: "text-sage-700 bg-sage-50" },
+  pending_payment: { label: "Aguardando", cls: "text-terra bg-terra-soft/20" },
+  cancelled: { label: "Cancelado", cls: "text-ink-mute bg-sand/40" },
+  no_show: { label: "No-show", cls: "text-ink-mute bg-sand/40" },
 };
 
 export default async function ClienteDetailPage({
@@ -86,7 +86,7 @@ export default async function ClienteDetailPage({
             href={`https://wa.me/${phoneDigits}`}
             target="_blank"
             rel="noopener"
-            className="inline-flex items-center gap-1.5 rounded-full bg-sage-gradient text-cream px-4 py-2 text-sm font-medium elev-1 hover:opacity-95 transition shrink-0"
+            className="inline-flex items-center gap-1.5 rounded-full bg-sage-gradient text-cream px-4 py-2 text-sm font-medium elev-soft hover:opacity-95 transition shrink-0"
           >
             <Phone className="size-4" /> WhatsApp
           </a>
@@ -95,11 +95,11 @@ export default async function ClienteDetailPage({
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-white border border-sand elev-1 p-4">
+        <div className="rounded-[1.1rem] bg-paper hairline elev-soft p-4">
           <p className="text-xs uppercase tracking-wider text-ink-soft">Atendimentos</p>
           <p className="font-serif text-2xl text-ink mt-1 tabular-nums">{overview?.visits ?? active.length}</p>
         </div>
-        <div className="rounded-2xl bg-white border border-sand elev-1 p-4">
+        <div className="rounded-[1.1rem] bg-paper hairline elev-soft p-4">
           <p className="text-xs uppercase tracking-wider text-ink-soft">Total</p>
           <p className="font-serif text-2xl text-sage-700 mt-1 tabular-nums">{formatBRL(totalCents)}</p>
         </div>
@@ -107,7 +107,7 @@ export default async function ClienteDetailPage({
 
       {/* Próximo agendamento */}
       {next && (
-        <div className="rounded-2xl bg-sage-50 border border-sage-100 p-4 flex items-center gap-3">
+        <div className="rounded-[1.1rem] bg-sage-50 hairline p-4 flex items-center gap-3">
           <CalendarClock className="size-5 text-sage-700 shrink-0" />
           <div>
             <p className="text-xs uppercase tracking-wider text-sage-700 font-semibold">Próximo</p>
@@ -131,7 +131,7 @@ export default async function ClienteDetailPage({
               return (
                 <li
                   key={a.id}
-                  className="flex items-center justify-between gap-3 rounded-2xl bg-white border border-sand elev-1 p-3.5"
+                  className="flex items-center justify-between gap-3 rounded-[1.1rem] bg-paper hairline elev-soft p-3.5"
                 >
                   <div className="min-w-0">
                     <p className={`font-medium capitalize ${cancelled ? "text-ink-mute line-through" : "text-ink"}`}>
@@ -144,7 +144,7 @@ export default async function ClienteDetailPage({
                     <p className={`font-medium tabular-nums ${cancelled ? "text-ink-mute" : "text-ink"}`}>
                       {formatBRL(a.total_cents ?? a.amount_cents ?? 0)}
                     </p>
-                    <span className={`inline-flex items-center text-[11px] rounded-full border px-2 py-0.5 mt-1 ${st.cls}`}>
+                    <span className={`inline-flex items-center text-[11px] rounded-full px-2.5 py-0.5 mt-1 ${st.cls}`}>
                       {st.label}
                     </span>
                   </div>

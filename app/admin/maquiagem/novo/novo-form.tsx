@@ -47,7 +47,7 @@ function addMinutes(hm: string, mins: number): string | null {
 }
 
 const inputCls =
-  "w-full rounded-xl border border-sand bg-white px-3.5 py-2.5 text-ink placeholder:text-ink-mute focus:border-sage-300 focus:ring-2 focus:ring-sage-100 outline-none transition";
+  "w-full rounded-[0.9rem] bg-paper hairline px-4 py-3 text-ink placeholder:text-ink-mute focus:border-sage-300 focus:ring-2 focus:ring-sage-100 outline-none transition";
 
 export function NovoForm({ services }: { services: Service[] }) {
   const router = useRouter();
@@ -63,7 +63,7 @@ export function NovoForm({ services }: { services: Service[] }) {
         ← Voltar pra agenda
       </Link>
 
-      <div className="grid grid-cols-2 gap-1 bg-sand/50 rounded-xl p-1">
+      <div className="grid grid-cols-2 gap-1 bg-cream-soft hairline rounded-2xl p-1">
         <TabBtn active={tab === "appt"} onClick={() => setTab("appt")}>
           Agendamento
         </TabBtn>
@@ -282,8 +282,8 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-lg py-2 text-sm font-medium transition",
-        active ? "bg-white text-ink shadow-sm" : "text-ink-soft hover:text-ink",
+        "rounded-[0.85rem] py-2 text-sm font-medium transition",
+        active ? "bg-paper text-ink elev-soft" : "text-ink-soft hover:text-ink",
       )}
     >
       {children}
@@ -320,7 +320,7 @@ function SubmitBtn({
 }) {
   const styles =
     tone === "primary"
-      ? "bg-sage-gradient text-cream elev-1 hover:opacity-95"
+      ? "bg-sage-gradient text-cream elev-soft hover:opacity-95"
       : "bg-ink text-cream hover:opacity-90";
   return (
     <button
