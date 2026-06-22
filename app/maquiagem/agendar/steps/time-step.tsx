@@ -75,7 +75,7 @@ export function TimeStep({
         )}
 
         {!loading && !error && slots.length === 0 && (
-          <div className="rounded-2xl bg-cream-soft/60 border border-sand p-6 text-center">
+          <div className="rounded-[1.25rem] bg-cream-soft/60 hairline p-6 text-center">
             <p className="font-serif text-lg text-ink">Sem horários nesse dia.</p>
             <p className="text-sm text-ink-soft mt-2">
               Volte e escolha outro dia, ou fale no WhatsApp pra encaixe.
@@ -100,10 +100,10 @@ export function TimeStep({
                   type="button"
                   onClick={() => onSelect(slot)}
                   className={[
-                    "h-12 rounded-xl text-sm font-medium transition border",
+                    "h-12 rounded-[0.9rem] text-sm font-medium transition",
                     isSelected
-                      ? "bg-sage-700 text-cream border-sage-700"
-                      : "bg-cream text-ink border-sand hover:border-sage-200 hover:bg-sage-50",
+                      ? "bg-sage-700 text-cream elev-soft"
+                      : "bg-paper hairline text-ink hover:bg-sage-50",
                   ].join(" ")}
                 >
                   {formatTimeBR(new Date(slot.startsIso))}

@@ -82,7 +82,7 @@ export function DataStep({
       </h1>
       <p className="mt-2 text-ink-soft">É só pra Gaby confirmar com você no WhatsApp.</p>
 
-      <div className="mt-6 rounded-2xl bg-cream-soft/70 border border-sand p-5">
+      <div className="mt-6 rounded-[1.25rem] bg-cream-soft/70 hairline p-5">
         <div className="flex items-baseline justify-between gap-3">
           <p className="font-serif text-lg text-ink">{service.name}</p>
           <p className="font-serif text-lg text-sage-700">
@@ -121,7 +121,7 @@ export function DataStep({
         <button
           type="submit"
           disabled={submitting}
-          className="w-full inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-base font-medium bg-sage-gradient text-cream elev-2 hover:opacity-95 disabled:opacity-60 transition"
+          className="w-full inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-base font-medium bg-sage-gradient text-cream elev-soft hover:opacity-95 disabled:opacity-60 transition"
         >
           {submitting ? "Reservando…" : "Confirmar reserva"}
         </button>
@@ -149,7 +149,7 @@ function Field({ label, value, onChange, ...rest }: FieldProps) {
         {...rest}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full h-12 rounded-xl border border-sand bg-cream px-4 text-base text-ink placeholder:text-ink-soft/60 focus:outline-none focus:border-sage-300 focus:ring-2 focus:ring-sage-100"
+        className="w-full h-12 rounded-[0.9rem] bg-paper hairline px-4 text-base text-ink placeholder:text-ink-soft/60 focus:outline-none focus:border-sage-300 focus:ring-2 focus:ring-sage-100"
       />
     </label>
   );

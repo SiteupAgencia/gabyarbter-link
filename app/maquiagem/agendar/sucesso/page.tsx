@@ -59,7 +59,7 @@ export default async function SucessoPage({
         </p>
       </div>
 
-      <div className="mt-8 rounded-2xl bg-cream border border-sand elev-1 p-6">
+      <div className="mt-8 rounded-[1.25rem] bg-paper hairline elev-soft p-6">
         <Row label="Serviço" value={serviceName} />
         <Row label="Dia" value={capitalize(formatDateBR(startsAt))} />
         <Row label="Horário" value={formatTimeBR(startsAt)} />
@@ -73,7 +73,7 @@ export default async function SucessoPage({
           href="https://wa.me/message/E6RZKY2Y72LEB1"
           target="_blank"
           rel="noopener"
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-base font-medium bg-sage-gradient text-cream elev-1 hover:opacity-95"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-base font-medium bg-sage-gradient text-cream elev-soft hover:opacity-95"
         >
           Falar com a Gaby
         </Link>
