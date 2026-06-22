@@ -30,7 +30,7 @@ export function BlockCard({
   }
 
   return (
-    <article className="rounded-2xl bg-sand/30 border border-dashed border-sand-deep p-4">
+    <article className="rounded-[1.25rem] bg-cream-soft/70 border border-dashed border-sand-deep/60 p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2.5 min-w-0">
           {recurring ? (

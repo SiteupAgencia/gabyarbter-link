@@ -109,10 +109,10 @@ export function FaturamentoClient({ appointments }: { appointments: Appt[] }) {
             key={t.id}
             onClick={() => setPeriod(t.id)}
             className={cn(
-              "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium transition border",
+              "shrink-0 rounded-full px-3.5 py-1.5 text-[0.82rem] font-medium transition",
               period === t.id
-                ? "bg-sage-700 text-cream border-sage-700"
-                : "bg-white text-ink-soft border-sand hover:border-sage-300",
+                ? "bg-sage-700 text-cream elev-soft"
+                : "bg-paper hairline text-ink-soft hover:text-ink",
             )}
           >
             {t.label}
@@ -121,7 +121,7 @@ export function FaturamentoClient({ appointments }: { appointments: Appt[] }) {
       </div>
 
       {/* Destaque */}
-      <div className="rounded-2xl bg-white border border-sand elev-1 p-5">
+      <div className="rounded-[1.25rem] bg-paper hairline elev-soft p-5">
         <p className="text-xs uppercase tracking-wider text-ink-soft">Faturamento do período</p>
         <p className="font-serif text-4xl text-sage-700 mt-1 tabular-nums">{formatBRL(total)}</p>
         {expected > 0 && (
@@ -133,11 +133,11 @@ export function FaturamentoClient({ appointments }: { appointments: Appt[] }) {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-cream-soft border border-sand p-4">
+        <div className="rounded-[1.1rem] bg-cream-soft hairline p-4">
           <p className="text-xs uppercase tracking-wider text-ink-soft">Atendimentos</p>
           <p className="font-serif text-2xl text-ink mt-1 tabular-nums">{count}</p>
         </div>
-        <div className="rounded-2xl bg-cream-soft border border-sand p-4">
+        <div className="rounded-[1.1rem] bg-cream-soft hairline p-4">
           <p className="text-xs uppercase tracking-wider text-ink-soft">Ticket médio</p>
           <p className="font-serif text-2xl text-ink mt-1 tabular-nums">{formatBRL(ticket)}</p>
         </div>
@@ -148,7 +148,7 @@ export function FaturamentoClient({ appointments }: { appointments: Appt[] }) {
         <h2 className="text-xs uppercase tracking-[0.18em] font-semibold mb-3 text-ink-soft">
           Últimos 6 meses
         </h2>
-        <div className="rounded-2xl bg-white border border-sand elev-1 p-4">
+        <div className="rounded-[1.25rem] bg-paper hairline elev-soft p-4">
           <div className="flex items-end justify-between gap-2 h-28">
             {months.map((m) => (
               <div key={m.key} className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
@@ -176,7 +176,7 @@ export function FaturamentoClient({ appointments }: { appointments: Appt[] }) {
           </h2>
           <div className="space-y-2">
             {byService.map((s) => (
-              <div key={s.name} className="rounded-xl bg-white border border-sand p-3.5">
+              <div key={s.name} className="rounded-[1rem] bg-paper hairline p-3.5">
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="font-medium text-ink truncate">{s.name}</span>
                   <span className="tabular-nums text-sage-700 font-medium shrink-0">{formatBRL(s.cents)}</span>
@@ -201,7 +201,7 @@ export function FaturamentoClient({ appointments }: { appointments: Appt[] }) {
           Atendimentos {count > 0 && <span className="text-ink-mute">· {count}</span>}
         </h2>
         {inPeriod.length === 0 ? (
-          <div className="rounded-2xl bg-white/60 border border-sand p-8 text-center">
+          <div className="rounded-[1.25rem] bg-paper/60 hairline p-8 text-center">
             <p className="text-ink-soft">Nada faturado nesse período ainda.</p>
           </div>
         ) : (
@@ -209,7 +209,7 @@ export function FaturamentoClient({ appointments }: { appointments: Appt[] }) {
             {inPeriod.slice(0, 80).map((a) => (
               <li
                 key={a.id}
-                className="flex items-center justify-between gap-3 rounded-xl bg-white border border-sand p-3.5"
+                className="flex items-center justify-between gap-3 rounded-[1rem] bg-paper hairline p-3.5"
               >
                 <div className="min-w-0">
                   <p className="font-medium text-ink truncate">{a.clientName}</p>

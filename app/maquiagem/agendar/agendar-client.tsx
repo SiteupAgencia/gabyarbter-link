@@ -118,7 +118,7 @@ export function AgendarClient({
 
 function Header({ step }: { step: Step }) {
   return (
-    <header className="sticky top-0 z-30 backdrop-blur-md bg-cream/85 border-b border-sand/60">
+    <header className="sticky top-0 z-30 backdrop-blur-xl bg-cream/80 border-b border-black/[0.06]">
       <div className="mx-auto max-w-2xl px-5 h-14 flex items-center justify-between">
         <Link
           href="/maquiagem"
@@ -145,7 +145,7 @@ function ServicePill({ service, step }: { service: MakeService; step: Step }) {
   if (step >= 4) return null;
   return (
     <div className="sticky bottom-0 inset-x-0 px-5 pb-4 pointer-events-none sm:hidden">
-      <div className="pointer-events-auto rounded-2xl bg-cream/95 backdrop-blur border border-sand elev-3 px-4 py-3 flex items-center justify-between gap-3">
+      <div className="pointer-events-auto rounded-[1.4rem] bg-cream/95 backdrop-blur hairline elev-soft-lg px-4 py-3 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[11px] uppercase tracking-wider text-ink-soft">Selecionado</p>
           <p className="text-sm text-ink truncate font-medium">{service.name}</p>

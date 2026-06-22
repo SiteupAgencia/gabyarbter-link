@@ -238,12 +238,12 @@ export function AgendaCalendar({
       )}
 
       {/* Calendário */}
-      <div className="rounded-2xl bg-white border border-sand elev-1 p-4">
+      <div className="rounded-[1.4rem] bg-paper hairline elev-soft p-4">
         <div className="flex items-center justify-between mb-4">
           <button
             type="button"
             onClick={() => shiftMonth(-1)}
-            className="size-9 inline-flex items-center justify-center rounded-full border border-sand text-ink-soft hover:bg-sage-50 transition"
+            className="size-9 inline-flex items-center justify-center rounded-full hairline text-ink-soft hover:bg-sage-50 transition"
             aria-label="Mês anterior"
           >
             <ChevronLeft className="size-4" />
@@ -254,7 +254,7 @@ export function AgendaCalendar({
           <button
             type="button"
             onClick={() => shiftMonth(1)}
-            className="size-9 inline-flex items-center justify-center rounded-full border border-sand text-ink-soft hover:bg-sage-50 transition"
+            className="size-9 inline-flex items-center justify-center rounded-full hairline text-ink-soft hover:bg-sage-50 transition"
             aria-label="Próximo mês"
           >
             <ChevronRight className="size-4" />
@@ -299,7 +299,7 @@ export function AgendaCalendar({
                     <span
                       className={cn(
                         "inline-flex items-center justify-center rounded-full text-[10px] font-medium tabular-nums min-w-[1rem] h-4 px-1",
-                        isSelected ? "bg-cream/25 text-cream" : "bg-sage-200 text-sage-900",
+                        isSelected ? "bg-cream/25 text-cream" : "bg-sage-100 text-sage-700",
                       )}
                     >
                       {count}
@@ -322,22 +322,22 @@ export function AgendaCalendar({
         <h2 className="font-serif text-xl text-ink capitalize mb-3">{dayLabelFull(sel)}</h2>
 
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="rounded-2xl bg-cream-soft border border-sand p-3.5">
+          <div className="rounded-[1.1rem] bg-cream-soft hairline p-3.5">
             <p className="text-xs uppercase tracking-wider text-ink-soft">Agendamentos</p>
             <p className="font-serif text-2xl text-ink mt-1 tabular-nums">{dayCount}</p>
           </div>
-          <div className="rounded-2xl bg-cream-soft border border-sand p-3.5">
+          <div className="rounded-[1.1rem] bg-cream-soft hairline p-3.5">
             <p className="text-xs uppercase tracking-wider text-ink-soft">Faturamento do dia</p>
             <p className="font-serif text-2xl text-sage-700 mt-1 tabular-nums">{formatBRL(dayRevenue)}</p>
           </div>
         </div>
 
         {entries.length === 0 ? (
-          <div className="rounded-2xl bg-white/60 border border-sand p-8 text-center">
+          <div className="rounded-[1.25rem] bg-paper/60 hairline p-8 text-center">
             <p className="text-ink-soft mb-4">Dia livre.</p>
             <Link
               href="/admin/maquiagem/novo"
-              className="inline-flex items-center gap-1.5 rounded-full bg-sage-gradient text-cream px-4 py-2.5 text-sm font-medium elev-1 hover:opacity-95 transition"
+              className="inline-flex items-center gap-1.5 rounded-full bg-sage-gradient text-cream px-4 py-2.5 text-sm font-medium elev-soft hover:opacity-95 transition"
             >
               <Plus className="size-4" /> Novo agendamento
             </Link>

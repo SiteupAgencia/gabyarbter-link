@@ -100,7 +100,7 @@ export function DateStep({
         Os dias verdes têm horário disponível. Toque pra ver os horários.
       </p>
 
-      <div className="mt-7 rounded-2xl bg-cream border border-sand elev-1 p-5">
+      <div className="mt-7 rounded-[1.4rem] bg-paper hairline elev-soft p-5">
         <div className="flex items-center justify-between mb-4">
           <button
             type="button"
@@ -109,7 +109,7 @@ export function DateStep({
               setMonthAnchor(new Date(monthAnchor.getFullYear(), monthAnchor.getMonth() - 1, 1))
             }
             disabled={!canPrev}
-            className="size-9 inline-flex items-center justify-center rounded-full border border-sand text-ink-soft hover:bg-sage-50 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="size-9 inline-flex items-center justify-center rounded-full hairline text-ink-soft hover:bg-sage-50 disabled:opacity-30 disabled:cursor-not-allowed"
             aria-label="Mês anterior"
           >
             ←
@@ -122,7 +122,7 @@ export function DateStep({
               setMonthAnchor(new Date(monthAnchor.getFullYear(), monthAnchor.getMonth() + 1, 1))
             }
             disabled={!canNext}
-            className="size-9 inline-flex items-center justify-center rounded-full border border-sand text-ink-soft hover:bg-sage-50 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="size-9 inline-flex items-center justify-center rounded-full hairline text-ink-soft hover:bg-sage-50 disabled:opacity-30 disabled:cursor-not-allowed"
             aria-label="Próximo mês"
           >
             →

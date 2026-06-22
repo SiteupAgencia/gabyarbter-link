@@ -26,7 +26,7 @@ export function ServiceStep({
   return (
     <section className="fade-up">
       {/* Tranquiliza logo de cara: o medo nº1 é "vou ter que pagar agora?" */}
-      <div className="flex items-start gap-3 rounded-2xl bg-sage-50 border border-sage-100 p-4 mb-6">
+      <div className="flex items-start gap-3 rounded-[1.25rem] bg-sage-50 hairline p-4 mb-6">
         <Shield />
         <div>
           <p className="font-medium text-sage-900">Sem pagar nada agora</p>
@@ -51,12 +51,8 @@ export function ServiceStep({
               key={s.id}
               type="button"
               onClick={() => onSelect(s)}
-              className={`group block w-full text-left rounded-2xl border bg-cream overflow-hidden elev-1 transition active:scale-[0.995] hover:elev-2 ${
-                isSelected
-                  ? "border-sage-700 ring-2 ring-sage-200"
-                  : featured
-                    ? "border-sage-300"
-                    : "border-sand"
+              className={`group block w-full text-left rounded-[1.5rem] bg-paper overflow-hidden elev-soft hover:elev-soft-lg transition active:scale-[0.99] ${
+                isSelected ? "ring-[1.5px] ring-sage-500" : "hairline"
               }`}
             >
               <div className="relative aspect-[16/10] bg-sand">
@@ -68,12 +64,12 @@ export function ServiceStep({
                   className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                 />
                 {featured && (
-                  <span className="absolute top-3 right-3 bg-sage-700 text-cream text-[11px] font-medium rounded-full px-2.5 py-1 elev-1">
+                  <span className="absolute top-3 right-3 bg-sage-700 text-cream text-[11px] font-medium rounded-full px-2.5 py-1 elev-soft">
                     Mais escolhida
                   </span>
                 )}
                 {isSelected && (
-                  <span className="absolute top-3 left-3 inline-flex items-center justify-center size-7 rounded-full bg-sage-700 text-cream elev-1">
+                  <span className="absolute top-3 left-3 inline-flex items-center justify-center size-7 rounded-full bg-sage-600 text-cream elev-soft">
                     <CheckMark />
                   </span>
                 )}

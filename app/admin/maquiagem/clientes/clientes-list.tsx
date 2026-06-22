@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, ChevronRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn, formatBRL } from "@/lib/utils";
@@ -46,7 +46,7 @@ export function ClientesList({ clients }: { clients: ClientAgg[] }) {
           placeholder="Buscar por nome ou telefone…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full rounded-xl border border-sand bg-white pl-10 pr-3.5 py-2.5 text-ink placeholder:text-ink-mute focus:border-sage-300 focus:ring-2 focus:ring-sage-100 outline-none transition"
+          className="w-full rounded-[0.9rem] bg-paper hairline pl-10 pr-3.5 py-2.5 text-ink placeholder:text-ink-mute focus:border-sage-300 focus:ring-2 focus:ring-sage-100 outline-none transition"
         />
       </div>
 
@@ -56,10 +56,10 @@ export function ClientesList({ clients }: { clients: ClientAgg[] }) {
             key={t.id}
             onClick={() => setFilter(t.id)}
             className={cn(
-              "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition border",
+              "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.82rem] font-medium transition",
               filter === t.id
-                ? "bg-sage-700 text-cream border-sage-700"
-                : "bg-white text-ink-soft border-sand hover:border-sage-300",
+                ? "bg-sage-700 text-cream elev-soft"
+                : "bg-paper hairline text-ink-soft hover:text-ink",
             )}
           >
             {t.label}
@@ -73,7 +73,7 @@ export function ClientesList({ clients }: { clients: ClientAgg[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl bg-white/60 border border-sand p-8 text-center">
+        <div className="rounded-[1.25rem] bg-paper/60 hairline p-8 text-center">
           <p className="font-serif text-xl mb-1 text-ink">Ninguém por aqui ainda</p>
           <p className="text-sm text-ink-soft">
             {query.trim() ? "Tente buscar de outro jeito." : "As clientes aparecem aqui conforme os agendamentos entram."}
@@ -92,7 +92,7 @@ export function ClientesList({ clients }: { clients: ClientAgg[] }) {
               <li key={c.key}>
                 <Link
                   href={`/admin/maquiagem/clientes/${encodeURIComponent(c.key)}`}
-                  className="flex items-center gap-3 rounded-2xl bg-white border border-sand elev-1 hover:elev-2 transition-all p-3.5"
+                  className="flex items-center gap-3 rounded-[1.1rem] bg-paper hairline elev-soft hover:elev-soft-lg hover:-translate-y-0.5 transition-all duration-200 p-3.5"
                 >
                   <Avatar name={c.name} seed={c.key} />
                   <div className="flex-1 min-w-0">
@@ -108,7 +108,7 @@ export function ClientesList({ clients }: { clients: ClientAgg[] }) {
                       {c.visits} {c.visits === 1 ? "atendimento" : "atendimentos"} · {formatBRL(c.totalCents)} · {when}
                     </p>
                   </div>
-                  <span className="shrink-0 text-ink-mute">›</span>
+                  <ChevronRight className="size-[1.1rem] text-sand-deep shrink-0" strokeWidth={2.25} />
                 </Link>
               </li>
             );
