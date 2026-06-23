@@ -5,10 +5,8 @@ import { Lotus } from "@/components/lotus";
 import { JsonLd, beautySalon, gabyPerson, maquiagemFaqs, buildFaqSchema } from "@/lib/seo/jsonld";
 import { Faq } from "@/components/faq";
 
-// MANTÉM TuaAgenda enquanto o /maquiagem/agendar interno está em
-// validação. Só trocar pra "/maquiagem/agendar" quando confirmar
-// que o novo fluxo está 100% testado e a Gaby aprovou.
-const BOOKING_URL = "https://client.tuaagenda.com/c/Gabyarbtermk/agendar/servicos";
+// Fluxo de agendamento INTERNO (substituiu o TuaAgenda em 23/06/2026).
+const BOOKING_URL = "/maquiagem/agendar";
 const WHATSAPP_URL = "https://wa.me/message/E6RZKY2Y72LEB1";
 const INSTAGRAM_URL = "https://www.instagram.com/gabyarbter/";
 
@@ -93,8 +91,6 @@ function SiteHeader() {
         </Link>
         <Link
           href={BOOKING_URL}
-          target="_blank"
-          rel="noopener"
           className="hidden sm:inline-flex h-9 items-center rounded-full px-5 text-sm font-medium bg-sage-gradient text-cream elev-1 hover:opacity-95 active:opacity-90 transition"
         >
           Agendar
@@ -130,8 +126,6 @@ function Hero() {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href={BOOKING_URL}
-                target="_blank"
-                rel="noopener"
                 className="inline-flex h-12 items-center gap-2 rounded-full pl-6 pr-5 text-base font-medium bg-sage-gradient text-cream elev-2 hover:opacity-95 active:opacity-90 transition"
               >
                 Agendar minha make
@@ -341,9 +335,7 @@ function ServiceCard({ service }: { service: (typeof SERVICES)[number] }) {
         <p className="mt-5 text-xs text-ink-soft italic">{service.note}</p>
 
         <Link
-          href={BOOKING_URL}
-          target="_blank"
-          rel="noopener"
+          href={`/maquiagem/agendar?service=${service.id}`}
           className={[
             "mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-sm font-medium transition",
             isFeatured
@@ -371,7 +363,7 @@ function ComoFunciona() {
     {
       n: "02",
       title: "Agenda online",
-      body: "Reserva data e horário no Tua Agenda. Confirmação imediata, sem ligação.",
+      body: "Reserva data e horário aqui mesmo. A Gaby confirma rapidinho no WhatsApp.",
     },
     {
       n: "03",
@@ -547,8 +539,6 @@ function CtaFinal() {
         <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
           <Link
             href={BOOKING_URL}
-            target="_blank"
-            rel="noopener"
             className="inline-flex h-12 items-center gap-2 rounded-full pl-6 pr-5 text-base font-medium bg-sage-gradient text-cream elev-2 hover:opacity-95 active:opacity-90 transition"
           >
             Agendar minha make
@@ -583,7 +573,7 @@ function SiteFooter() {
           </div>
         </div>
         <div className="flex flex-wrap gap-x-5 gap-y-2">
-          <Link href={BOOKING_URL} target="_blank" rel="noopener" className="hover:text-sage-700 transition">
+          <Link href={BOOKING_URL} className="hover:text-sage-700 transition">
             Agendar
           </Link>
           <Link href={WHATSAPP_URL} target="_blank" rel="noopener" className="hover:text-sage-700 transition">
@@ -606,8 +596,6 @@ function StickyMobileCta() {
       <div className="mx-3 mb-3 rounded-2xl bg-cream border border-sand elev-3 px-3 py-2.5 flex items-center gap-2">
         <Link
           href={BOOKING_URL}
-          target="_blank"
-          rel="noopener"
           className="flex-1 inline-flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium bg-sage-gradient text-cream"
         >
           Agendar minha make
