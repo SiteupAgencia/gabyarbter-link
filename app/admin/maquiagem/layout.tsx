@@ -13,9 +13,17 @@ export default function MaquiagemAdminLayout({ children }: { children: React.Rea
           >
             <ChevronLeft className="size-4" /> Painel
           </Link>
-          <span className="inline-flex items-center gap-2 font-serif text-[1.02rem] text-ink">
-            <span className="size-1.5 rounded-full bg-terra" aria-hidden /> Maquiagem
-          </span>
+          {/* Alternador de painel: Maquiagem (atual) ↔ Yoga. <a> puro no Yoga
+              porque /sopro é um app proxiado (sai do roteamento deste app). */}
+          <div className="inline-flex items-center rounded-full hairline p-0.5 text-xs font-medium">
+            <span className="rounded-full px-2.5 py-1 bg-terra/15 text-terra">Maquiagem</span>
+            <a
+              href="/sopro/admin"
+              className="rounded-full px-2.5 py-1 text-sage-700 hover:bg-sage-50 transition"
+            >
+              Yoga
+            </a>
+          </div>
         </div>
         <div className="pb-2.5">
           <AdminNav />
