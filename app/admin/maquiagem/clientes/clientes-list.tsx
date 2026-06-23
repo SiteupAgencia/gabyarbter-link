@@ -18,7 +18,7 @@ export function ClientesList({ clients }: { clients: ClientAgg[] }) {
   const filtered = useMemo(() => {
     let list = clients;
     if (filter === "upcoming") list = list.filter((c) => c.upcoming > 0);
-    if (filter === "top") list = [...list].sort((a, b) => b.totalCents - a.totalCents).slice(0, 15);
+    if (filter === "top") list = [...list].sort((a, b) => b.visits - a.visits || b.totalCents - a.totalCents).slice(0, 15);
 
     if (query.trim()) {
       const q = query.toLowerCase();

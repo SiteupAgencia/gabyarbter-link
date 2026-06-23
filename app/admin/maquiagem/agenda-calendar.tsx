@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Plus, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, Plus, Lock } from "lucide-react";
 import { cn, formatBRL } from "@/lib/utils";
 import { AppointmentCard } from "./appointment-card";
 import { BlockCard } from "./block-card";
@@ -43,6 +43,10 @@ type Recurring = {
 
 const TZ = "America/Sao_Paulo";
 const WEEKDAYS_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
+const MONTHS_SHORT = [
+  "jan", "fev", "mar", "abr", "mai", "jun",
+  "jul", "ago", "set", "out", "nov", "dez",
+];
 const WEEKDAYS_FULL = [
   "domingo", "segunda-feira", "terça-feira", "quarta-feira",
   "quinta-feira", "sexta-feira", "sábado",
@@ -110,6 +114,9 @@ export function AgendaCalendar({
     year: Number(today.slice(0, 4)),
     month: Number(today.slice(5, 7)) - 1,
   });
+  // Seletor de mês/ano (abre ao tocar no título). Painel inline — robusto no iOS/PWA.
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerYear, setPickerYear] = useState(anchor.year);
 
   // Calendário mostra só o que está confirmado/concluído. Pedidos vão pro topo.
   const apptsByDay = useMemo(() => {
@@ -216,6 +223,33 @@ export function AgendaCalendar({
     });
   }
 
+  // Anos oferecidos no seletor: os que têm agendamentos carregados (a agenda é
+  // forward-looking: ~90 dias + futuro) + o ano atual e o próximo, como faixa contígua.
+  const years = useMemo(() => {
+    const set = new Set<number>();
+    for (const a of appointments) {
+      const y = Number(dayKeyBR(a.starts_at).slice(0, 4));
+      if (y) set.add(y);
+    }
+    const cur = Number(today.slice(0, 4));
+    set.add(cur);
+    set.add(cur + 1);
+    const min = Math.min(...set, anchor.year);
+    const max = Math.max(...set, anchor.year);
+    const out: number[] = [];
+    for (let y = min; y <= max; y++) out.push(y);
+    return out;
+  }, [appointments, today, anchor.year]);
+
+  function openPicker() {
+    setPickerYear(anchor.year);
+    setPickerOpen(true);
+  }
+  function pickMonth(month: number) {
+    setAnchor({ year: pickerYear, month });
+    setPickerOpen(false);
+  }
+
   return (
     <div className="space-y-6">
       {/* Pedidos aguardando confirmação — destaque no topo */}
@@ -248,9 +282,23 @@ export function AgendaCalendar({
           >
             <ChevronLeft className="size-4" />
           </button>
-          <p className="font-serif text-lg text-ink capitalize">
-            {monthLabel(anchor.year, anchor.month)}
-          </p>
+          <button
+            type="button"
+            onClick={() => (pickerOpen ? setPickerOpen(false) : openPicker())}
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 hover:bg-sage-50 transition"
+            aria-expanded={pickerOpen}
+            aria-label="Selecionar mês e ano"
+          >
+            <span className="font-serif text-lg text-ink capitalize">
+              {monthLabel(anchor.year, anchor.month)}
+            </span>
+            <ChevronDown
+              className={cn(
+                "size-4 text-ink-soft transition-transform",
+                pickerOpen && "rotate-180",
+              )}
+            />
+          </button>
           <button
             type="button"
             onClick={() => shiftMonth(1)}
@@ -261,6 +309,57 @@ export function AgendaCalendar({
           </button>
         </div>
 
+        {pickerOpen ? (
+          <div className="py-1">
+            {/* Anos */}
+            <div className="flex flex-wrap justify-center gap-1.5 mb-3">
+              {years.map((y) => (
+                <button
+                  key={y}
+                  type="button"
+                  onClick={() => setPickerYear(y)}
+                  className={cn(
+                    "min-w-[3.5rem] rounded-full px-3 py-1.5 text-sm tabular-nums transition",
+                    y === pickerYear
+                      ? "bg-sage-700 text-cream"
+                      : "hairline text-ink hover:bg-sage-50",
+                  )}
+                  aria-pressed={y === pickerYear}
+                >
+                  {y}
+                </button>
+              ))}
+            </div>
+            {/* Meses */}
+            <div className="grid grid-cols-3 gap-1.5">
+              {MONTHS_SHORT.map((label, m) => {
+                const isCurrent = pickerYear === anchor.year && m === anchor.month;
+                const isThisMonth =
+                  pickerYear === Number(today.slice(0, 4)) &&
+                  m === Number(today.slice(5, 7)) - 1;
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => pickMonth(m)}
+                    className={cn(
+                      "rounded-xl py-2.5 text-sm capitalize transition",
+                      isCurrent
+                        ? "bg-sage-700 text-cream"
+                        : isThisMonth
+                          ? "bg-sage-50 text-ink ring-1 ring-sage-300"
+                          : "text-ink hover:bg-sage-50",
+                    )}
+                    aria-pressed={isCurrent}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <>
         <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-ink-soft mb-1">
           {WEEKDAYS_SHORT.map((d, i) => (
             <div key={i} className="py-1">{d}</div>
@@ -315,6 +414,8 @@ export function AgendaCalendar({
             );
           })}
         </div>
+          </>
+        )}
       </div>
 
       {/* Dia selecionado */}
