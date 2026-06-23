@@ -63,7 +63,7 @@ export default async function SucessoPage({
         <Row label="Serviço" value={serviceName} />
         <Row label="Dia" value={capitalize(formatDateBR(startsAt))} />
         <Row label="Horário" value={formatTimeBR(startsAt)} />
-        <Row label="Onde" value="Estúdio em Erechim/RS" />
+        <Row label="Onde" value="Salão SOUL — Rua Marcos Uchoa, 225 (em frente à Progym)" />
         <Row label="Valor" value={formatBRL(appt.total_cents ?? appt.amount_cents)} />
         <Row label="Pagamento" value="No dia · PIX, dinheiro ou cartão" />
       </div>
