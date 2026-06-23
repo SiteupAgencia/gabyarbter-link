@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { MakeService, MakeSettings } from "@/lib/make/types";
 import { formatBRL } from "@/lib/utils";
 import { formatDateBR, formatTimeBR } from "@/lib/make/slots";
+
+const WHATSAPP_URL = "https://wa.me/message/E6RZKY2Y72LEB1";
 
 type Slot = { startsIso: string; endsIso: string };
 
@@ -25,6 +28,7 @@ export function TimeStep({
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,7 +50,7 @@ export function TimeStep({
     return () => {
       cancelled = true;
     };
-  }, [service.slug, dateYmd]);
+  }, [service.slug, dateYmd, reloadKey]);
 
   return (
     <section className="fade-up">
@@ -69,9 +73,26 @@ export function TimeStep({
         {loading && <p className="text-center text-ink-soft py-8">Buscando horários…</p>}
 
         {error && (
-          <p className="text-center text-clay py-8">
-            Não consegui buscar os horários. Tenta de novo daqui a pouco.
-          </p>
+          <div className="rounded-[1.25rem] bg-terra/10 border border-terra/30 p-6 text-center">
+            <p className="text-sm text-terra">Não consegui buscar os horários agora.</p>
+            <div className="mt-4 flex flex-col items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setReloadKey((k) => k + 1)}
+                className="inline-flex h-10 items-center rounded-full px-5 text-sm font-medium bg-sage-gradient text-cream elev-soft hover:opacity-95"
+              >
+                Tentar de novo
+              </button>
+              <Link
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener"
+                className="text-sm text-sage-700 hover:text-sage-900 underline underline-offset-2"
+              >
+                Ou fala com a Gaby no WhatsApp
+              </Link>
+            </div>
+          </div>
         )}
 
         {!loading && !error && slots.length === 0 && (
@@ -100,7 +121,7 @@ export function TimeStep({
                   type="button"
                   onClick={() => onSelect(slot)}
                   className={[
-                    "h-12 rounded-[0.9rem] text-sm font-medium transition",
+                    "h-12 rounded-[0.9rem] text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-300",
                     isSelected
                       ? "bg-sage-700 text-cream elev-soft"
                       : "bg-paper hairline text-ink hover:bg-sage-50",

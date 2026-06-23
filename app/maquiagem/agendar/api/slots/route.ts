@@ -19,6 +19,9 @@ export async function GET(req: Request) {
   if (!slug || !dateYmd) {
     return NextResponse.json({ error: "missing params" }, { status: 400 });
   }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateYmd)) {
+    return NextResponse.json({ error: "bad_date_format" }, { status: 400 });
+  }
 
   const service = await getMakeServiceBySlug(slug);
   if (!service) return NextResponse.json({ error: "service_not_found" }, { status: 404 });

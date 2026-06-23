@@ -153,7 +153,7 @@ export function DateStep({
                 disabled={!isOpen}
                 onClick={() => isOpen && onSelect(ymd)}
                 className={[
-                  "aspect-square rounded-xl text-sm font-medium transition relative",
+                  "aspect-square rounded-xl text-sm font-medium transition relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-300",
                   isSelected
                     ? "bg-sage-700 text-cream"
                     : isOpen
@@ -177,8 +177,8 @@ export function DateStep({
       </div>
 
       <p className="mt-4 text-xs text-ink-soft text-center">
-        Antecedência mínima: {settings.min_advance_hours}h · Antecedência máxima:{" "}
-        {settings.max_advance_days} dias
+        Dá pra marcar a partir de {settings.min_advance_hours}h de antecedência, até{" "}
+        {settings.max_advance_days} dias à frente.
       </p>
     </section>
   );

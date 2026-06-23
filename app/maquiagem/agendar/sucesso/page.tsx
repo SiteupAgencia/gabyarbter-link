@@ -50,12 +50,12 @@ export default async function SucessoPage({
           <Check />
         </div>
         <h1 className="font-serif text-3xl sm:text-4xl text-ink leading-tight">
-          {isConfirmed ? "Tá confirmado! 🪷" : "Pedido enviado! 🪷"}
+          {isConfirmed ? "Tá garantido pra você 🪷" : "Recebi seu pedido 🪷"}
         </h1>
         <p className="mt-3 text-ink-soft leading-relaxed">
           {isConfirmed
             ? "A Gaby te espera. Não precisa pagar nada agora — é só vir no dia."
-            : "A Gaby vai te confirmar pelo WhatsApp pertinho. Assim que ela confirmar, tá garantido — e você não paga nada agora."}
+            : "A Gaby costuma confirmar pelo WhatsApp em poucas horas. Assim que ela confirmar, tá garantido — e você não paga nada agora. Se demorar, é só chamar ela aqui embaixo."}
         </p>
       </div>
 

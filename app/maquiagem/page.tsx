@@ -15,7 +15,7 @@ const INSTAGRAM_URL = "https://www.instagram.com/gabyarbter/";
 export const metadata: Metadata = {
   title: "Maquiagem em Erechim/RS — Gaby Arbter (Express e Blindada)",
   description:
-    "Maquiagem profissional em Erechim/RS. Express R$ 175 (~30min) e Blindada R$ 200-215 (~45min). Atendimento sextas e sábados, com agendamento online e entrada via PIX.",
+    "Maquiagem profissional em Erechim/RS. Express R$ 175 (~30min) e Blindada R$ 200-215 (~45min). Atendimento sextas e sábados, com agendamento online e pagamento presencial (PIX, dinheiro ou cartão).",
   alternates: { canonical: "/maquiagem" },
   keywords: [
     "maquiagem Erechim",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Maquiagem em Erechim/RS — Gaby Arbter",
     description:
-      "Express R$ 175 e Blindada R$ 200-215. Estúdio em Erechim, sextas e sábados. Agendamento online com entrada via PIX.",
+      "Express R$ 175 e Blindada R$ 200-215. Estúdio em Erechim, sextas e sábados. Agendamento online, pagamento presencial.",
     url: "https://gabyarbter.com.br/maquiagem",
     images: [
       {
@@ -83,7 +83,7 @@ export default function MaquiagemPage() {
 
 function SiteHeader() {
   return (
-    <header className="sticky top-0 z-30 backdrop-blur-md bg-cream/80 border-b border-sand/50">
+    <header className="sticky top-0 z-30 bg-cream/95 border-b border-sand/50">
       <div className="mx-auto max-w-6xl px-5 h-14 sm:h-16 flex items-center justify-between">
         <Link href="/maquiagem" className="flex items-center gap-2 text-ink">
           <Lotus className="size-6 sm:size-7" />
@@ -292,7 +292,7 @@ function ServiceCard({ service }: { service: (typeof SERVICES)[number] }) {
             Mais escolhida
           </span>
         )}
-        <div className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 bg-cream/90 backdrop-blur text-ink text-[11px] px-2.5 py-1 rounded-full">
+        <div className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 bg-cream/95 text-ink text-[11px] px-2.5 py-1 rounded-full">
           <Clock />
           {service.duration}
         </div>
@@ -603,7 +603,7 @@ function SiteFooter() {
 function StickyMobileCta() {
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden safe-bottom">
-      <div className="mx-3 mb-3 rounded-2xl bg-cream/95 backdrop-blur border border-sand elev-3 px-3 py-2.5 flex items-center gap-2">
+      <div className="mx-3 mb-3 rounded-2xl bg-cream border border-sand elev-3 px-3 py-2.5 flex items-center gap-2">
         <Link
           href={BOOKING_URL}
           target="_blank"

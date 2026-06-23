@@ -11,7 +11,6 @@ type Body = {
   startsAtIso?: string;
   clientName?: string;
   clientPhone?: string;
-  clientEmail?: string | null;
 };
 
 // Sem cobrança online: a Gaby prefere receber no dia (PIX, dinheiro ou cartão).
@@ -38,6 +37,12 @@ export async function POST(req: Request) {
   if (startsAt.getTime() < Date.now() + minAdvanceMs - 60_000) {
     return NextResponse.json({ ok: false, error: "too_soon" }, { status: 400 });
   }
+  // Teto de antecedência: o front respeita, mas um POST direto não. +1 dia de folga
+  // pra não barrar o último dia da janela por arredondamento.
+  const maxAdvanceMs = settings.max_advance_days * 86400_000;
+  if (startsAt.getTime() > Date.now() + maxAdvanceMs + 86400_000) {
+    return NextResponse.json({ ok: false, error: "too_far" }, { status: 400 });
+  }
 
   const clientPhone = toE164(body.clientPhone);
   if (!clientPhone) {
@@ -62,7 +67,7 @@ export async function POST(req: Request) {
       service_id: service.id,
       client_name: body.clientName.trim(),
       client_phone: clientPhone,
-      client_email: body.clientEmail?.trim() || null,
+      client_email: null,
       starts_at: startsAt.toISOString(),
       ends_at: endsAt.toISOString(),
       status: "pending_payment", // aguardando a Gaby confirmar

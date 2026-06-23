@@ -21,6 +21,18 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "missing params" }, { status: 400 });
   }
 
+  // Endpoint público sem auth: valida formato e limita a janela pra evitar full scan.
+  const YMD = /^\d{4}-\d{2}-\d{2}$/;
+  if (!YMD.test(fromYmd) || !YMD.test(toYmd)) {
+    return NextResponse.json({ error: "bad_date_format" }, { status: 400 });
+  }
+  if (fromYmd > toYmd) {
+    return NextResponse.json({ error: "bad_range" }, { status: 400 });
+  }
+  if ((Date.parse(toYmd) - Date.parse(fromYmd)) / 86400_000 > 45) {
+    return NextResponse.json({ error: "range_too_large" }, { status: 400 });
+  }
+
   const service = await getMakeServiceBySlug(slug);
   if (!service) return NextResponse.json({ error: "service_not_found" }, { status: 404 });
 

@@ -1,10 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { MakeService } from "@/lib/make/types";
 import { formatBRL } from "@/lib/utils";
 import { formatDateBR, formatTimeBR } from "@/lib/make/slots";
+import { toE164 } from "@/lib/make/phone";
 import type { AgendarState } from "../agendar-client";
+
+const WHATSAPP_URL = "https://wa.me/message/E6RZKY2Y72LEB1";
+
+// Traduz os códigos de erro do servidor pra linguagem de gente.
+function friendlyError(code: string): string {
+  switch (code) {
+    case "slot_taken":
+      return "Esse horário acabou de ser reservado. Escolhe outro, por favor 🌸";
+    case "too_soon":
+      return "Esse horário ficou em cima da hora. Escolhe um pouquinho mais pra frente.";
+    case "too_far":
+      return "Esse dia está além da agenda aberta. Escolhe uma data mais próxima.";
+    case "invalid_phone":
+      return "Confere o número do WhatsApp — algo como (54) 9 9999-9999.";
+    case "slot_unavailable":
+      return "Esse horário não está mais disponível. Escolhe outro, por favor.";
+    default:
+      return "Não consegui concluir agora. Tenta de novo ou chama a Gaby no WhatsApp.";
+  }
+}
 
 export function DataStep({
   service,
@@ -26,8 +48,13 @@ export function DataStep({
     e.preventDefault();
     setError(null);
 
-    if (!state.clientName.trim() || !state.clientPhone.trim()) {
-      setError("Preencha nome e WhatsApp.");
+    if (!state.clientName.trim()) {
+      setError("Como você quer ser chamada? Preenche seu nome.");
+      return;
+    }
+    const phone = toE164(state.clientPhone);
+    if (!phone) {
+      setError("Confere o número do WhatsApp — algo como (54) 9 9999-9999.");
       return;
     }
 
@@ -40,8 +67,7 @@ export function DataStep({
           serviceSlug: service.slug,
           startsAtIso: slot.startsIso,
           clientName: state.clientName.trim(),
-          clientPhone: state.clientPhone.trim(),
-          clientEmail: state.clientEmail.trim() || null,
+          clientPhone: phone,
         }),
       });
       const json = (await res.json()) as
@@ -49,7 +75,7 @@ export function DataStep({
         | { ok: false; error: string };
 
       if (!res.ok || !("ok" in json) || !json.ok) {
-        setError(("error" in json && json.error) || "Não consegui criar o agendamento.");
+        setError(friendlyError(("error" in json && json.error) || ""));
         setSubmitting(false);
         return;
       }
@@ -61,8 +87,8 @@ export function DataStep({
 
       // stub ou cash → redirect interno pra página de confirmação
       window.location.href = `/maquiagem/agendar/sucesso?id=${json.appointmentId}`;
-    } catch (e) {
-      setError(String((e as Error).message || e));
+    } catch {
+      setError("Sem conexão agora. Tenta de novo ou chama a Gaby no WhatsApp.");
       setSubmitting(false);
     }
   }
@@ -93,7 +119,7 @@ export function DataStep({
           {formatDateBR(state.date!)} · {formatTimeBR(new Date(slot.startsIso))}
         </p>
         <p className="mt-1 text-xs text-ink-soft">
-          Pagamento no dia · PIX, dinheiro ou cartão
+          Você só paga no dia · PIX, dinheiro ou cartão
         </p>
       </div>
 
@@ -116,7 +142,19 @@ export function DataStep({
           required
         />
 
-        {error && <p className="text-sm text-clay">{error}</p>}
+        {error && (
+          <div className="rounded-[0.9rem] bg-terra/10 border border-terra/30 p-3.5 text-sm text-terra">
+            <p>{error}</p>
+            <Link
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener"
+              className="mt-1.5 inline-flex items-center gap-1 font-medium underline underline-offset-2"
+            >
+              Falar com a Gaby no WhatsApp
+            </Link>
+          </div>
+        )}
 
         <button
           type="submit"

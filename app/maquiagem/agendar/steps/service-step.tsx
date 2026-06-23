@@ -51,7 +51,7 @@ export function ServiceStep({
               key={s.id}
               type="button"
               onClick={() => onSelect(s)}
-              className={`group block w-full text-left rounded-[1.5rem] bg-paper overflow-hidden elev-soft hover:elev-soft-lg transition active:scale-[0.99] ${
+              className={`group block w-full text-left rounded-[1.5rem] bg-paper overflow-hidden elev-soft hover:elev-soft-lg transition active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-300 ${
                 isSelected ? "ring-[1.5px] ring-sage-500" : "hairline"
               }`}
             >
@@ -88,7 +88,7 @@ export function ServiceStep({
                     <Clock />~{s.duration_min} min
                   </span>
                   <span aria-hidden className="h-3 w-px bg-sand" />
-                  <span>paga no dia{featured ? " · cartão +R$15" : ""}</span>
+                  <span>sem pagar agora{featured ? " · cartão +R$15 no dia" : ""}</span>
                 </div>
               </div>
             </button>
