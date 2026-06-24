@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, ChevronDown, Plus, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, Plus, Lock, Phone, CheckCircle2 } from "lucide-react";
 import { cn, formatBRL } from "@/lib/utils";
 import { AppointmentCard } from "./appointment-card";
 import { BlockCard } from "./block-card";
@@ -24,6 +24,8 @@ type Appt = {
   notes: string | null;
   service_id: string;
   serviceName: string;
+  confirmed_at: string | null;
+  source: string;
 };
 type OneOff = {
   id: string;
@@ -89,6 +91,18 @@ function dayLabelFull(ymd: string): string {
   }).format(new Date(`${ymd}T12:00:00Z`));
 }
 
+/** "sáb, 22/08 · 12:15" — dia + hora compactos pro card de confirmado recente. */
+function dayTimeShortBR(iso: string): string {
+  const d = new Date(iso);
+  const dia = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: TZ, weekday: "short", day: "2-digit", month: "2-digit",
+  }).format(d).replace(/\./g, "");
+  const hora = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: TZ, hour: "2-digit", minute: "2-digit",
+  }).format(d);
+  return `${dia} · ${hora}`;
+}
+
 function buildCells(year: number, month: number): (string | null)[] {
   const firstDow = new Date(Date.UTC(year, month, 1, 12)).getUTCDay();
   const daysInMonth = new Date(Date.UTC(year, month + 1, 0, 12)).getUTCDate();
@@ -137,6 +151,18 @@ export function AgendaCalendar({
         .filter((a) => a.status === "pending_payment")
         .slice()
         .sort((a, b) => a.starts_at.localeCompare(b.starts_at)),
+    [appointments],
+  );
+
+  // Confirmados recentemente pela Gaby — só os do app (não os 2.300 migrados),
+  // ordenados pela hora que ela confirmou. Referência rápida no topo.
+  const recentlyConfirmed = useMemo(
+    () =>
+      appointments
+        .filter((a) => a.status === "confirmed" && a.source === "app" && a.confirmed_at)
+        .slice()
+        .sort((a, b) => (b.confirmed_at ?? "").localeCompare(a.confirmed_at ?? ""))
+        .slice(0, 6),
     [appointments],
   );
 
@@ -267,6 +293,44 @@ export function AgendaCalendar({
                 visitNumber={visitNumberOf(a)}
               />
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* Confirmados recentemente — referência rápida pra Gaby */}
+      {recentlyConfirmed.length > 0 && (
+        <section>
+          <h2 className="text-xs uppercase tracking-[0.18em] font-semibold mb-3 text-sage-700 inline-flex items-center gap-1.5">
+            <CheckCircle2 className="size-3.5" /> Confirmados recentemente
+          </h2>
+          <div className="space-y-2">
+            {recentlyConfirmed.map((a) => {
+              const phoneDigits = String(a.client_phone).replace(/\D/g, "");
+              return (
+                <div
+                  key={a.id}
+                  className="flex items-center justify-between gap-3 rounded-[1.1rem] bg-paper hairline elev-soft p-3.5"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-sage-700 capitalize">
+                      {dayTimeShortBR(a.starts_at)}
+                    </p>
+                    <p className="font-medium text-ink mt-0.5 truncate">{a.client_name}</p>
+                    <p className="text-sm text-ink-soft mt-0.5 truncate">{a.serviceName}</p>
+                  </div>
+                  {phoneDigits && (
+                    <a
+                      href={`https://wa.me/${phoneDigits}`}
+                      target="_blank"
+                      rel="noopener"
+                      className="inline-flex items-center gap-1 text-sm text-sage-700 hover:text-sage-900 transition shrink-0"
+                    >
+                      <Phone className="size-4" /> WhatsApp
+                    </a>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
