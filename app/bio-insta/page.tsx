@@ -40,7 +40,6 @@ export const metadata: Metadata = {
 
 // URLs reais (extraídas do Linktree atual em 2026-05-16).
 // Quando o Sopro for pro ar, trocar URL_YOGA pelo domínio dele.
-const URL_YOUTUBE_AULA = "https://youtu.be/qh38626wbY0?si=lt53dj3pAlutrqst";
 const URL_AGENDAR_MAQUIAGEM = "/maquiagem";
 const URL_YOGA = "/yoga"; // landing dedicada — leva pro cadastro do Sopro
 const URL_CURSO_AUTOMAQUIAGEM = "https://pay.hotmart.com/Y79914073O";
@@ -130,10 +129,10 @@ function Cards() {
   return (
     <section className="space-y-3 fade-up" style={{ animationDelay: "120ms" }}>
       <PortaCard
-        href={URL_YOUTUBE_AULA}
+        href={URL_YOUTUBE_CANAL}
         icon={<PlayCircle className="size-5" />}
-        title="Aula de yoga grátis"
-        subtitle="Pra iniciantes — acalma e renova"
+        title="Canal de yoga no YouTube"
+        subtitle="Aulas e práticas gratuitas"
         tone="soft"
       />
       <PortaCard
