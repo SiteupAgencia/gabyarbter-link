@@ -38,6 +38,14 @@ function timeBR(iso: string): string {
   }).format(new Date(iso));
 }
 
+/** "terça-feira, 24/06" — dia por extenso pro card de pedido (que vive fora da
+ *  seção do dia, então precisa carregar a data com ele). */
+function dayBR(iso: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: TZ, weekday: "long", day: "2-digit", month: "2-digit",
+  }).format(new Date(iso));
+}
+
 function formatBRL(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
@@ -94,6 +102,11 @@ export function AppointmentCard({
     >
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
+          {isRequest && (
+            <p className="text-sm font-medium text-terra capitalize mb-0.5">
+              {dayBR(appt.starts_at)}
+            </p>
+          )}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-serif text-xl tabular-nums text-ink">{timeBR(appt.starts_at)}</span>
             {isRequest && (

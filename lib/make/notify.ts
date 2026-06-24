@@ -4,14 +4,19 @@ import { sendWhatsAppText } from "@/lib/waha";
 const TZ = "America/Sao_Paulo";
 
 function formatWhen(iso: string): string {
-  return new Intl.DateTimeFormat("pt-BR", {
+  const d = new Date(iso);
+  const dia = new Intl.DateTimeFormat("pt-BR", {
     timeZone: TZ,
     weekday: "long",
     day: "2-digit",
     month: "long",
+  }).format(d);
+  const hora = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: TZ,
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(iso));
+  }).format(d);
+  return `${dia} às ${hora}`;
 }
 
 function formatBRL(cents: number): string {
