@@ -1,11 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, AlertCircle, Save, CalendarOff } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { createManualAppointment, createBlock } from "../actions";
+import { Loader2, AlertCircle, Save, CalendarOff, Users } from "lucide-react";
+import { cn, formatPhoneBR } from "@/lib/utils";
+import { createManualAppointment, createBlock, searchMakeClients } from "../actions";
+
+type ClientMatch = {
+  key: string;
+  name: string;
+  phone: string | null;
+  visits: number;
+  isMigrated: boolean;
+};
 
 type Service = {
   id: string;
@@ -89,6 +97,42 @@ function ApptForm({ services, onDone }: { services: Service[]; onDone: () => voi
   const [start, setStart] = useState("");
   const [notes, setNotes] = useState("");
 
+  // Dedupe: busca clientes já cadastrados enquanto a Gaby digita nome/telefone,
+  // pra ela reaproveitar em vez de criar um cadastro repetido.
+  const [matches, setMatches] = useState<ClientMatch[]>([]);
+  const [showMatches, setShowMatches] = useState(false);
+  const skipSearch = useRef(false);
+
+  useEffect(() => {
+    // Pular a busca logo depois de escolher uma cliente (evita reabrir sozinho).
+    if (skipSearch.current) {
+      skipSearch.current = false;
+      return;
+    }
+    const nm = name.trim();
+    const ph = phone.trim();
+    const longEnough = nm.length >= 2 || ph.replace(/\D/g, "").length >= 8;
+    if (!longEnough) {
+      setMatches([]);
+      setShowMatches(false);
+      return;
+    }
+    const t = setTimeout(async () => {
+      const res = await searchMakeClients({ name: nm, phone: ph });
+      setMatches(res);
+      setShowMatches(res.length > 0);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [name, phone]);
+
+  function pickMatch(m: ClientMatch) {
+    skipSearch.current = true;
+    setName(m.name);
+    if (m.phone) setPhone(formatPhoneBR(m.phone));
+    setShowMatches(false);
+    setMatches([]);
+  }
+
   const service = services.find((s) => s.id === serviceId) ?? null;
   const endPreview = service && start ? addMinutes(start, service.duration_min) : null;
 
@@ -134,6 +178,36 @@ function ApptForm({ services, onDone }: { services: Service[]; onDone: () => voi
           placeholder="(54) 99999-9999"
         />
       </Field>
+
+      {showMatches && matches.length > 0 && (
+        <div className="-mt-2 rounded-[0.9rem] bg-sage-50 hairline p-2.5 space-y-1">
+          <p className="px-1 pb-1 text-xs font-medium text-ink-soft inline-flex items-center gap-1.5">
+            <Users className="size-3.5" /> Já tem cadastro? Toque pra usar:
+          </p>
+          {matches.map((m) => (
+            <button
+              key={m.key}
+              type="button"
+              onClick={() => pickMatch(m)}
+              className="w-full text-left rounded-[0.7rem] px-3 py-2 hover:bg-sage-100 transition"
+            >
+              <span className="block text-sm font-medium text-ink truncate">{m.name}</span>
+              <span className="block text-xs text-ink-soft">
+                {m.phone ? formatPhoneBR(m.phone) : "sem telefone"}
+                {m.visits > 0 && ` · ${m.visits} atend.`}
+                {m.isMigrated && " · cliente antiga"}
+              </span>
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setShowMatches(false)}
+            className="w-full text-left rounded-[0.7rem] px-3 py-1.5 text-xs text-ink-mute hover:bg-sand/40 transition"
+          >
+            É uma cliente nova — seguir com o cadastro
+          </button>
+        </div>
+      )}
 
       <Field label="Serviço">
         <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} className={inputCls}>

@@ -113,6 +113,52 @@ export async function declineBooking(appointmentId: string) {
 }
 
 /**
+ * Busca clientes JÁ cadastrados por nome (parcial) ou telefone (normalizado),
+ * pra Gaby reaproveitar em vez de criar duplicado no novo agendamento.
+ * Lê a view make_client_overview (uma linha por cliente). Nunca lança: retorna
+ * [] em qualquer erro/sessão inválida.
+ */
+export async function searchMakeClients(input: {
+  name?: string;
+  phone?: string;
+}): Promise<
+  { key: string; name: string; phone: string | null; visits: number; isMigrated: boolean }[]
+> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  // Sanitiza pro filtro .or() do PostgREST (vírgula/parênteses/curinga são sintaxe).
+  const name = (input.name ?? "").trim().replace(/[%,()*]/g, " ").trim();
+  const phone = toE164(input.phone ?? "");
+
+  const filters: string[] = [];
+  if (name.length >= 2) filters.push(`name.ilike.*${name}*`);
+  if (phone) filters.push(`phone.eq.${phone}`);
+  if (filters.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("make_client_overview")
+    .select("client_key, name, phone, visits, is_migrated")
+    .or(filters.join(","))
+    .order("most_recent", { ascending: false })
+    .limit(6);
+
+  if (error) {
+    console.warn("[make] searchMakeClients:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((r) => ({
+    key: r.client_key as string,
+    name: r.name as string,
+    phone: (r.phone as string | null) ?? null,
+    visits: (r.visits as number) ?? 0,
+    isMigrated: Boolean(r.is_migrated),
+  }));
+}
+
+/**
  * Agendamento manual feito pela Gaby (cliente que veio pelo Insta/WhatsApp).
  * Entra confirmado, sem cobrança online — recebe tudo no dia (deposit = 0).
  * Grava na MESMA agenda que o fluxo online lê, então a exclusion constraint
