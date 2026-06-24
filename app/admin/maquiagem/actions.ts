@@ -113,6 +113,24 @@ export async function declineBooking(appointmentId: string) {
 }
 
 /**
+ * Cancela um agendamento JÁ CONFIRMADO (cliente desmarcou, imprevisto da Gaby…).
+ * Vira status 'cancelled' → sai da agenda e LIBERA o horário pro online
+ * (make_busy_slots só conta pending_payment/confirmed).
+ */
+export async function cancelBooking(appointmentId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("not_authenticated");
+
+  const { error } = await supabase
+    .from("make_appointments")
+    .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
+    .eq("id", appointmentId);
+  if (error) throw error;
+  revalidatePath("/admin/maquiagem");
+}
+
+/**
  * Busca clientes JÁ cadastrados por nome (parcial) ou telefone (normalizado),
  * pra Gaby reaproveitar em vez de criar duplicado no novo agendamento.
  * Lê a view make_client_overview (uma linha por cliente). Nunca lança: retorna

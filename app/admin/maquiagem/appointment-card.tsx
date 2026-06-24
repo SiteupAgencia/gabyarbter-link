@@ -8,8 +8,9 @@ import {
   markNoShow,
   confirmBooking,
   declineBooking,
+  cancelBooking,
 } from "./actions";
-import { Check, Phone, Loader2, AlertCircle, CheckCheck, X, Sparkles } from "lucide-react";
+import { Check, Phone, Loader2, AlertCircle, CheckCheck, X, Sparkles, CalendarX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TZ = "America/Sao_Paulo";
@@ -70,6 +71,7 @@ export function AppointmentCard({
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
 
   const totalCents = appt.total_cents ?? appt.amount_cents;
   const depositCents = appt.deposit_cents ?? appt.amount_cents;
@@ -193,7 +195,21 @@ export function AppointmentCard({
       )}
 
       {/* Ações */}
-      {isRequest ? (
+      {confirmingCancel ? (
+        <div className="mt-3">
+          <p className="text-sm text-ink-soft mb-2">
+            Cancelar esse agendamento? O horário fica livre de novo.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <ActionButton onClick={() => run(() => cancelBooking(appt.id))} pending={pending} tone="danger">
+              <CalendarX className="size-4" /> Sim, cancelar
+            </ActionButton>
+            <ActionButton onClick={() => setConfirmingCancel(false)} pending={pending} tone="ghost">
+              Voltar
+            </ActionButton>
+          </div>
+        </div>
+      ) : isRequest ? (
         <div className="mt-3 flex flex-wrap gap-2">
           <ActionButton onClick={() => run(() => confirmBooking(appt.id))} pending={pending} tone="primary">
             <Check className="size-4" /> Confirmar
@@ -224,6 +240,9 @@ export function AppointmentCard({
           </ActionButton>
           <ActionButton onClick={() => run(() => markNoShow(appt.id))} pending={pending} tone="danger">
             <X className="size-4" /> No-show
+          </ActionButton>
+          <ActionButton onClick={() => setConfirmingCancel(true)} pending={pending} tone="ghost">
+            <CalendarX className="size-4" /> Cancelar
           </ActionButton>
         </div>
       ) : null}
