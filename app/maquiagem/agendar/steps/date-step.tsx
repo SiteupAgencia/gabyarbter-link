@@ -177,8 +177,8 @@ export function DateStep({
       </div>
 
       <p className="mt-4 text-xs text-ink-soft text-center">
-        Dá pra marcar a partir de {settings.min_advance_hours}h de antecedência, até{" "}
-        {settings.max_advance_days} dias à frente.
+        Dá pra marcar a partir de {settings.min_advance_hours}h de antecedência — e com toda a
+        antecedência que precisar pra datas especiais.
       </p>
     </section>
   );

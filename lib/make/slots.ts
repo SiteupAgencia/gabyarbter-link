@@ -139,7 +139,7 @@ export function buildSettings(rows: { key: string; value: string }[]): MakeSetti
   return {
     buffer_minutes: Number(map.get("buffer_minutes") ?? 15),
     min_advance_hours: Number(map.get("min_advance_hours") ?? 12),
-    max_advance_days: Number(map.get("max_advance_days") ?? 60),
+    max_advance_days: Number(map.get("max_advance_days") ?? 1825),
     cancel_refund_hours: Number(map.get("cancel_refund_hours") ?? 24),
     slot_step_minutes: Number(map.get("slot_step_minutes") ?? 15),
     timezone: map.get("timezone") ?? "America/Sao_Paulo",

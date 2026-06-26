@@ -228,7 +228,7 @@ where not exists (
 insert into public.make_settings (key, value) values
   ('buffer_minutes',       '15'),
   ('min_advance_hours',    '12'),
-  ('max_advance_days',     '60'),
+  ('max_advance_days',     '1825'),  -- ~5 anos: noiva/madrinha marcam com muita antecedência
   ('cancel_refund_hours',  '24'),
   ('slot_step_minutes',    '15'),    -- granularidade dos slots oferecidos
   ('timezone',             'America/Sao_Paulo')
