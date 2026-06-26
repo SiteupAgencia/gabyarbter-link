@@ -6,6 +6,7 @@ import type { MakeService } from "@/lib/make/types";
 import { formatBRL } from "@/lib/utils";
 import { formatDateBR, formatTimeBR } from "@/lib/make/slots";
 import { toE164 } from "@/lib/make/phone";
+import { cardPriceCents } from "@/lib/make/pricing";
 import type { AgendarState } from "../agendar-client";
 
 const WHATSAPP_URL = "https://wa.me/message/E6RZKY2Y72LEB1";
@@ -119,7 +120,8 @@ export function DataStep({
           {formatDateBR(state.date!)} · {formatTimeBR(new Date(slot.startsIso))}
         </p>
         <p className="mt-1 text-xs text-ink-soft">
-          Você só paga no dia · PIX, dinheiro ou cartão
+          {formatBRL(service.price_cents)} no dinheiro · {formatBRL(cardPriceCents(service.price_cents))} no
+          pix/cartão · você só paga no dia
         </p>
       </div>
 

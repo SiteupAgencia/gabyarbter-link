@@ -56,7 +56,7 @@ export const beautySalon = {
   url: `${SITE}/maquiagem`,
   image: `${SITE}/maquiagem/hero-makes.jpg`,
   telephone: "+5554999936343",
-  priceRange: "R$ 175 - R$ 215",
+  priceRange: "R$ 175 - R$ 210",
   address: {
     "@type": "PostalAddress",
     addressLocality: "Erechim",
@@ -81,6 +81,10 @@ export const beautySalon = {
         "@type": "Offer",
         priceCurrency: "BRL",
         price: "175.00",
+        priceSpecification: [
+          { "@type": "PriceSpecification", price: "175.00", priceCurrency: "BRL", description: "Pagamento em dinheiro" },
+          { "@type": "PriceSpecification", price: "185.00", priceCurrency: "BRL", description: "Pagamento via PIX ou cartão" },
+        ],
         availability: "https://schema.org/InStock",
         itemOffered: {
           "@type": "Service",
@@ -96,7 +100,7 @@ export const beautySalon = {
         price: "200.00",
         priceSpecification: [
           { "@type": "PriceSpecification", price: "200.00", priceCurrency: "BRL", description: "Pagamento em dinheiro" },
-          { "@type": "PriceSpecification", price: "215.00", priceCurrency: "BRL", description: "Pagamento via PIX ou cartão" },
+          { "@type": "PriceSpecification", price: "210.00", priceCurrency: "BRL", description: "Pagamento via PIX ou cartão" },
         ],
         availability: "https://schema.org/InStock",
         itemOffered: {
@@ -195,7 +199,7 @@ export type FaqItem = { q: string; a: string };
 export const maquiagemFaqs: FaqItem[] = [
   {
     q: "Quanto custa uma maquiagem em Erechim com a Gaby?",
-    a: "A Maquiagem Express custa R$ 175 e dura cerca de 30 minutos — ideal pra eventos rápidos. A Maquiagem Blindada custa R$ 200 em dinheiro ou R$ 215 no PIX/cartão e dura cerca de 45 minutos, com acabamento HD de longa duração.",
+    a: "A Maquiagem Express custa R$ 175 em dinheiro (ou R$ 185 no PIX/cartão) e dura cerca de 30 minutos — ideal pra eventos rápidos. A Maquiagem Blindada custa R$ 200 em dinheiro (ou R$ 210 no PIX/cartão) e dura cerca de 45 minutos, com acabamento HD de longa duração.",
   },
   {
     q: "Onde fica o estúdio?",

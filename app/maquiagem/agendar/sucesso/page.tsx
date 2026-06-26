@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatBRL } from "@/lib/utils";
 import { formatDateBR, formatTimeBR } from "@/lib/make/slots";
+import { cardPriceCents } from "@/lib/make/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -64,8 +65,13 @@ export default async function SucessoPage({
         <Row label="Dia" value={capitalize(formatDateBR(startsAt))} />
         <Row label="Horário" value={formatTimeBR(startsAt)} />
         <Row label="Onde" value="Salão SOUL — Rua Marcos Uchoa, 225 (em frente à Progym)" />
-        <Row label="Valor" value={formatBRL(appt.total_cents ?? appt.amount_cents)} />
-        <Row label="Pagamento" value="No dia · PIX, dinheiro ou cartão" />
+        <Row
+          label="Valor"
+          value={`${formatBRL(appt.total_cents ?? appt.amount_cents)} no dinheiro · ${formatBRL(
+            cardPriceCents(appt.total_cents ?? appt.amount_cents),
+          )} no pix/cartão`}
+        />
+        <Row label="Pagamento" value="No dia, com a Gaby" />
       </div>
 
       <div className="mt-6 flex flex-col gap-2">

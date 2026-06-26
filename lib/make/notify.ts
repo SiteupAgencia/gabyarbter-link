@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendWhatsAppText } from "@/lib/waha";
+import { cardPriceCents } from "@/lib/make/pricing";
 
 const TZ = "America/Sao_Paulo";
 
@@ -101,14 +102,14 @@ export async function notifyClientConfirmed(appointmentId: string): Promise<void
     const totalCents = appt.total_cents ?? appt.amount_cents;
 
     const text = [
-      `Oi ${firstName}! Aqui é a Gaby ✨`,
+      `Oi ${firstName}! Que alegria, aqui é a Gaby ✨`,
       ``,
-      `Tá confirmada sua *${serviceName}* ${formatWhen(appt.starts_at)}! 🪷`,
+      `Tá tudo certinho pra sua *${serviceName}* ${formatWhen(appt.starts_at)}! 🪷`,
       `Te espero no salão SOUL — Rua Marcos Uchoa, 225 (em frente à Progym).`,
       ``,
-      `No dia, é só trazer ${formatBRL(totalCents)} (PIX, dinheiro ou cartão).`,
+      `O valor é ${formatBRL(totalCents)} no dinheiro, ou ${formatBRL(cardPriceCents(totalCents))} no PIX e no cartão — fica do jeitinho que for melhor pra você. É só no dia, sem pressa. 💛`,
       ``,
-      `Qualquer mudança, é só me chamar por aqui 💛`,
+      `Qualquer dúvida, ou se precisar remarcar, é só me chamar por aqui. Vai ser um prazer te receber!`,
     ].join("\n");
 
     await sendWhatsAppText(appt.client_phone, text);
@@ -209,7 +210,7 @@ export async function remindAppointmentsForTomorrow(): Promise<{ sent: number; t
       const remainingCents = appt.final_paid_at ? 0 : Math.max(0, totalCents - depositCents);
 
       const moneyLine = remainingCents > 0
-        ? `No dia, é só trazer ${formatBRL(remainingCents)} (PIX ou dinheiro). 💛`
+        ? `No dia: ${formatBRL(remainingCents)} no dinheiro, ou ${formatBRL(cardPriceCents(remainingCents))} no PIX e no cartão — como preferir. 💛`
         : null;
 
       const text = [

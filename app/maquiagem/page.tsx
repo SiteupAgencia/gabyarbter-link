@@ -13,7 +13,7 @@ const INSTAGRAM_URL = "https://www.instagram.com/gabyarbter/";
 export const metadata: Metadata = {
   title: "Maquiagem em Erechim/RS — Gaby Arbter (Express e Blindada)",
   description:
-    "Maquiagem profissional em Erechim/RS. Express R$ 175 (~30min) e Blindada R$ 200-215 (~45min). Atendimento sextas e sábados, com agendamento online e pagamento presencial (PIX, dinheiro ou cartão).",
+    "Maquiagem profissional em Erechim/RS. Express R$ 175-185 (~30min) e Blindada R$ 200-210 (~45min). Atendimento sextas e sábados, com agendamento online e pagamento presencial (PIX, dinheiro ou cartão).",
   alternates: { canonical: "/maquiagem" },
   keywords: [
     "maquiagem Erechim",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Maquiagem em Erechim/RS — Gaby Arbter",
     description:
-      "Express R$ 175 e Blindada R$ 200-215. Estúdio em Erechim, sextas e sábados. Agendamento online, pagamento presencial.",
+      "Express R$ 175-185 e Blindada R$ 200-210. Estúdio em Erechim, sextas e sábados. Agendamento online, pagamento presencial.",
     url: "https://gabyarbter.com.br/maquiagem",
     images: [
       {
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Maquiagem em Erechim/RS — Gaby Arbter",
-    description: "Express R$ 175 · Blindada R$ 200-215. Em Erechim, sextas e sábados.",
+    description: "Express R$ 175-185 · Blindada R$ 200-210. Em Erechim, sextas e sábados.",
     images: ["/maquiagem/hero-makes.jpg"],
   },
 };
@@ -197,7 +197,10 @@ const SERVICES = [
     tagline: "A queridinha. Realce natural com pele resistente.",
     description:
       "Pra quem quer se sentir linda e segura em um evento social, com os traços valorizados — sem parecer que acabou de sair de um banho de salão. Beleza com leveza.",
-    pricing: [{ label: "À vista", value: "R$ 175" }],
+    pricing: [
+      { label: "Dinheiro", value: "R$ 175" },
+      { label: "Pix / cartão", value: "R$ 185" },
+    ],
     duration: "30 min",
     highlights: [
       { icon: Sparkle, text: "Foco no realce natural" },
@@ -217,7 +220,7 @@ const SERVICES = [
       "A técnica ideal pra grandes celebrações onde a durabilidade extrema é prioridade. Pele preparada pra atravessar horas e horas — sem retoque, sem susto.",
     pricing: [
       { label: "Dinheiro", value: "R$ 200" },
-      { label: "Pix / cartão", value: "R$ 215" },
+      { label: "Pix / cartão", value: "R$ 210" },
     ],
     duration: "40-45 min",
     highlights: [

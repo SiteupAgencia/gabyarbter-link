@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { MakeService } from "@/lib/make/types";
 import { formatBRL } from "@/lib/utils";
+import { cardPriceCents } from "@/lib/make/pricing";
 
 const WHATSAPP_URL = "https://wa.me/message/E6RZKY2Y72LEB1";
 
@@ -78,7 +79,12 @@ export function ServiceStep({
               <div className="p-5">
                 <div className="flex items-baseline justify-between gap-3">
                   <h3 className="font-serif text-xl text-ink leading-tight">{s.name}</h3>
-                  <p className="font-serif text-xl text-sage-700 shrink-0">{formatBRL(s.price_cents)}</p>
+                  <div className="text-right shrink-0">
+                    <p className="font-serif text-xl text-sage-700 leading-none">{formatBRL(s.price_cents)}</p>
+                    <p className="text-[11px] text-ink-soft mt-1">
+                      dinheiro · {formatBRL(cardPriceCents(s.price_cents))} pix/cartão
+                    </p>
+                  </div>
                 </div>
                 {s.description && (
                   <p className="mt-2 text-sm text-ink-soft leading-relaxed">{s.description}</p>
@@ -88,7 +94,7 @@ export function ServiceStep({
                     <Clock />~{s.duration_min} min
                   </span>
                   <span aria-hidden className="h-3 w-px bg-sand" />
-                  <span>sem pagar agora{featured ? " · cartão +R$15 no dia" : ""}</span>
+                  <span>sem pagar agora</span>
                 </div>
               </div>
             </button>
