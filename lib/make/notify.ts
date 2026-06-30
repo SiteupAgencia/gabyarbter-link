@@ -205,20 +205,12 @@ export async function remindAppointmentsForTomorrow(): Promise<{ sent: number; t
       const serviceName = service?.name ?? "maquiagem";
       const firstName = String(appt.client_name).trim().split(/\s+/)[0];
 
-      const totalCents = appt.total_cents ?? appt.amount_cents;
-      const depositCents = appt.deposit_cents ?? appt.amount_cents;
-      const remainingCents = appt.final_paid_at ? 0 : Math.max(0, totalCents - depositCents);
-
-      const moneyLine = remainingCents > 0
-        ? `No dia: ${formatBRL(remainingCents)} no dinheiro, ou ${formatBRL(cardPriceCents(remainingCents))} no PIX e no cartão — como preferir. 💛`
-        : null;
-
       const text = [
         `Oi ${firstName}! 🌸`,
         ``,
-        `Passando pra lembrar da sua ${serviceName}: ${formatWhen(appt.starts_at)}.`,
-        `Te espero no salão SOUL — Rua Marcos Uchoa, 225 (em frente à Progym) 🪷`,
-        ...(moneyLine ? [``, moneyLine] : []),
+        `Passando para confirmar sua maquiagem amanhã: ${serviceName}, ${formatWhen(appt.starts_at)}.`,
+        ``,
+        `Lembre de hidratar bem sua pele e ir com uma blusa ou decote parecido com o que você vai usar no seu compromisso.`,
         ``,
         `Se precisar remarcar, é só me chamar por aqui!`,
       ].join("\n");

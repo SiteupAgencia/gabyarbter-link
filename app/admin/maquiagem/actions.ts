@@ -7,8 +7,10 @@ import { notifyClientConfirmed } from "@/lib/make/notify";
 import { toE164 } from "@/lib/make/phone";
 
 type PaymentMethod = "cash" | "pix" | "credit_card";
+type ManualEventKind = "block" | "commitment" | "party" | "yoga";
 
 type ActionResult = { ok: true; id: string } | { ok: false; error: string };
+const MANUAL_EVENT_KINDS = new Set<ManualEventKind>(["block", "commitment", "party", "yoga"]);
 
 export async function markFinalPaid(appointmentId: string, method: PaymentMethod) {
   const supabase = await createClient();
@@ -176,6 +178,97 @@ export async function searchMakeClients(input: {
   }));
 }
 
+function overlaps(startA: Date, endA: Date, startB: Date, endB: Date) {
+  return startA < endB && endA > startB;
+}
+
+function dayYmd(date: Date) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+async function findMakeWindowConflict(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  startsAt: Date,
+  endsAt: Date,
+  excludeAppointmentId?: string,
+): Promise<string | null> {
+  const startIso = startsAt.toISOString();
+  const endIso = endsAt.toISOString();
+
+  let apptQuery = supabase
+    .from("make_appointments")
+    .select("id, client_name, starts_at, ends_at")
+    .in("status", ["pending_payment", "confirmed"])
+    .lt("starts_at", endIso)
+    .gt("ends_at", startIso)
+    .limit(1);
+
+  if (excludeAppointmentId) apptQuery = apptQuery.neq("id", excludeAppointmentId);
+
+  const { data: appts, error: apptErr } = await apptQuery;
+  if (apptErr) throw apptErr;
+  if ((appts ?? []).length > 0) return "Já existe uma make nesse horário.";
+
+  const ymd = dayYmd(startsAt);
+  const { data: blocks, error: blockErr } = await supabase
+    .from("make_blocked_dates")
+    .select("all_day, start_time, end_time, reason")
+    .eq("date", ymd);
+  if (blockErr) throw blockErr;
+
+  for (const b of blocks ?? []) {
+    if (b.all_day) return "Esse dia tem outro evento de dia inteiro.";
+    if (!b.start_time || !b.end_time) continue;
+    const bStart = combineDateTime(ymd, b.start_time);
+    const bEnd = combineDateTime(ymd, b.end_time);
+    if (overlaps(startsAt, endsAt, bStart, bEnd)) {
+      return "Esse horário cruza com outro evento da agenda.";
+    }
+  }
+
+  const weekday = weekdayInBR(ymd);
+  const { data: recurring, error: recErr } = await supabase
+    .from("make_recurring_blocks")
+    .select("start_time, end_time, reason")
+    .eq("weekday", weekday)
+    .eq("active", true);
+  if (recErr) throw recErr;
+
+  for (const r of recurring ?? []) {
+    const rStart = combineDateTime(ymd, r.start_time);
+    const rEnd = combineDateTime(ymd, r.end_time);
+    if (overlaps(startsAt, endsAt, rStart, rEnd)) {
+      return "Esse horário cruza com um evento fixo da agenda.";
+    }
+  }
+
+  const { data: yoga, error: yogaErr } = await supabase
+    .from("classes")
+    .select("starts_at, duration_minutes")
+    .gte("starts_at", combineDateTime(ymd, "00:00:00").toISOString())
+    .lt("starts_at", combineDateTime(ymd, "23:59:59").toISOString());
+
+  if (yogaErr) {
+    console.warn("[make] conflito com yoga não checado:", yogaErr.message);
+    return null;
+  }
+
+  for (const c of yoga ?? []) {
+    const cStart = new Date(c.starts_at);
+    const cEnd = new Date(cStart.getTime() + Number(c.duration_minutes) * 60_000);
+    if (overlaps(startsAt, endsAt, cStart, cEnd)) {
+      return "Esse horário cruza com uma aula de yoga.";
+    }
+  }
+
+  return null;
+}
+
 /**
  * Agendamento manual feito pela Gaby (cliente que veio pelo Insta/WhatsApp).
  * Entra confirmado, sem cobrança online — recebe tudo no dia (deposit = 0).
@@ -211,6 +304,8 @@ export async function createManualAppointment(input: {
   const startsAt = combineDateTime(input.dateYmd, input.startTime);
   if (isNaN(startsAt.getTime())) return { ok: false, error: "Data/horário inválidos." };
   const endsAt = new Date(startsAt.getTime() + service.duration_min * 60_000);
+  const conflict = await findMakeWindowConflict(supabase, startsAt, endsAt);
+  if (conflict) return { ok: false, error: conflict };
 
   const { data: appt, error } = await supabase
     .from("make_appointments")
@@ -241,6 +336,57 @@ export async function createManualAppointment(input: {
   return { ok: true, id: appt.id };
 }
 
+export async function rescheduleAppointment(input: {
+  appointmentId: string;
+  dateYmd: string;
+  startTime: string;
+}): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Sessão expirada — entre de novo." };
+
+  if (!input.appointmentId) return { ok: false, error: "Agendamento não encontrado." };
+  if (!input.dateYmd || !input.startTime) return { ok: false, error: "Escolha data e horário." };
+
+  const { data: appt, error: apptErr } = await supabase
+    .from("make_appointments")
+    .select("id, status, service:make_services(duration_min)")
+    .eq("id", input.appointmentId)
+    .single();
+
+  if (apptErr || !appt) return { ok: false, error: "Agendamento não encontrado." };
+  if (!["pending_payment", "confirmed"].includes(String(appt.status))) {
+    return { ok: false, error: "Só dá pra editar horário de pedido ou make confirmada." };
+  }
+
+  const service = Array.isArray(appt.service) ? appt.service[0] : appt.service;
+  const durationMin = Number(service?.duration_min ?? 0);
+  if (!durationMin) return { ok: false, error: "Serviço sem duração cadastrada." };
+
+  const startsAt = combineDateTime(input.dateYmd, input.startTime);
+  if (isNaN(startsAt.getTime())) return { ok: false, error: "Data/horário inválidos." };
+  const endsAt = new Date(startsAt.getTime() + durationMin * 60_000);
+
+  const conflict = await findMakeWindowConflict(supabase, startsAt, endsAt, input.appointmentId);
+  if (conflict) return { ok: false, error: conflict };
+
+  const { data: updated, error } = await supabase
+    .from("make_appointments")
+    .update({ starts_at: startsAt.toISOString(), ends_at: endsAt.toISOString() })
+    .eq("id", input.appointmentId)
+    .select("id")
+    .single();
+
+  if (error || !updated) {
+    const code = (error as { code?: string } | null)?.code;
+    if (code === "23P01") return { ok: false, error: "Já existe um agendamento nesse horário." };
+    return { ok: false, error: error?.message ?? "Não consegui alterar o horário." };
+  }
+
+  revalidatePath("/admin/maquiagem");
+  return { ok: true, id: updated.id };
+}
+
 /**
  * Bloqueio de horário (folga, yoga, almoço…).
  *  - recurring=false → make_blocked_dates (data única).
@@ -255,12 +401,14 @@ export async function createBlock(input: {
   startTime?: string; // 'HH:MM'
   endTime?: string;
   reason?: string;
+  kind?: ManualEventKind;
   recurring?: boolean;
 }): Promise<ActionResult> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Sessão expirada — entre de novo." };
   if (!input.dateYmd) return { ok: false, error: "Escolha a data." };
+  const kind = input.kind && MANUAL_EVENT_KINDS.has(input.kind) ? input.kind : "block";
 
   // Recorrente: sempre por faixa de horário, num dia da semana.
   if (input.recurring) {
@@ -277,6 +425,7 @@ export async function createBlock(input: {
         start_time: input.startTime,
         end_time: input.endTime,
         reason: input.reason?.trim() || null,
+        kind,
       })
       .select("id")
       .single();
@@ -308,6 +457,7 @@ export async function createBlock(input: {
       start_time,
       end_time,
       reason: input.reason?.trim() || null,
+      kind,
     })
     .select("id")
     .single();

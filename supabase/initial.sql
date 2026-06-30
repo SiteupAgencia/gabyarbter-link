@@ -43,11 +43,14 @@ create table if not exists public.make_blocked_dates (
   start_time    time,
   end_time      time,
   reason        text,
+  kind          text not null default 'block'
+                check (kind in ('block', 'commitment', 'party', 'yoga')),
   created_at    timestamptz not null default now(),
   check (all_day or (start_time is not null and end_time is not null and end_time > start_time))
 );
 
 create index if not exists make_blocked_dates_date_idx on public.make_blocked_dates(date);
+create index if not exists make_blocked_dates_kind_idx on public.make_blocked_dates(kind);
 
 -- ---------- 4. make_appointments ----------
 create table if not exists public.make_appointments (
@@ -168,11 +171,18 @@ security definer
 stable
 set search_path = public
 as $$
-  select starts_at, ends_at
-  from public.make_appointments
-  where status in ('pending_payment', 'confirmed')
-    and starts_at >= p_from
-    and starts_at < p_to;
+  select a.starts_at, a.ends_at
+  from public.make_appointments a
+  where a.status in ('pending_payment', 'confirmed')
+    and a.starts_at >= p_from
+    and a.starts_at < p_to
+
+  union all
+
+  select c.starts_at, c.starts_at + make_interval(mins => c.duration_minutes)
+  from public.classes c
+  where c.starts_at >= p_from
+    and c.starts_at < p_to;
 $$;
 
 grant execute on function public.make_busy_slots(timestamptz, timestamptz) to anon;

@@ -2,6 +2,7 @@ import { requireTeacher } from "@/lib/admin-guard";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { AgendaCalendar } from "./agenda-calendar";
+import { getYogaClassesSince } from "@/lib/make/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function MaquiagemAgendaPage() {
   // (milhares de atendimentos antigos) vive no CRM/Faturamento, não aqui.
   const since = new Date(Date.now() - 90 * 24 * 3600_000).toISOString();
 
-  const [{ data: appointments }, { data: services }, { data: blocks }, { data: recurring }] =
+  const [{ data: appointments }, { data: services }, { data: blocks }, { data: recurring }, yogaClasses] =
     await Promise.all([
       supabase
         .from("make_appointments")
@@ -30,11 +31,12 @@ export default async function MaquiagemAgendaPage() {
       supabase.from("make_services").select("id, name"),
       supabase
         .from("make_blocked_dates")
-        .select("id, date, all_day, start_time, end_time, reason"),
+        .select("id, date, all_day, start_time, end_time, reason, kind"),
       supabase
         .from("make_recurring_blocks")
-        .select("id, weekday, start_time, end_time, reason")
+        .select("id, weekday, start_time, end_time, reason, kind")
         .eq("active", true),
+      getYogaClassesSince(since),
     ]);
 
   const serviceMap = new Map((services ?? []).map((s) => [s.id, s.name]));
@@ -62,6 +64,7 @@ export default async function MaquiagemAgendaPage() {
         appointments={appts}
         oneOffBlocks={blocks ?? []}
         recurringBlocks={recurring ?? []}
+        yogaClasses={yogaClasses}
       />
     </div>
   );

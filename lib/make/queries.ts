@@ -1,10 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type {
   MakeBlockedDate,
   MakeBusySlot,
   MakeRecurringBlock,
   MakeService,
   MakeWeeklySchedule,
+  YogaClassEvent,
 } from "./types";
 import { buildSettings } from "./slots";
 
@@ -68,6 +70,30 @@ export async function getMakeRecurringBlocks(): Promise<MakeRecurringBlock[]> {
     return [];
   }
   return (data ?? []) as MakeRecurringBlock[];
+}
+
+export async function getYogaClassesSince(fromIso: string): Promise<YogaClassEvent[]> {
+  let supabase;
+  try {
+    supabase = createAdminClient();
+  } catch {
+    supabase = await createClient();
+  }
+
+  const { data, error } = await supabase
+    .from("classes")
+    .select("id, title, starts_at, duration_minutes, location")
+    .gte("starts_at", fromIso)
+    .order("starts_at", { ascending: true });
+
+  // Resiliente: se o schema do Sopro não estiver disponível em algum ambiente
+  // local, o admin da make continua funcionando sem os eventos de yoga.
+  if (error) {
+    console.warn("[make] classes do yoga indisponíveis:", error.message);
+    return [];
+  }
+
+  return (data ?? []) as YogaClassEvent[];
 }
 
 export async function getMakeBusySlots(

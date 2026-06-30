@@ -9,9 +9,11 @@ import {
   confirmBooking,
   declineBooking,
   cancelBooking,
+  rescheduleAppointment,
 } from "./actions";
-import { Check, Phone, Loader2, AlertCircle, CheckCheck, X, Sparkles, CalendarX } from "lucide-react";
+import { Check, Phone, Loader2, AlertCircle, CheckCheck, X, Sparkles, CalendarX, CalendarClock, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { timeRangeBR } from "@/lib/make/calendar";
 
 const TZ = "America/Sao_Paulo";
 
@@ -33,17 +35,29 @@ type AppointmentRow = {
   service_id: string;
 };
 
-function timeBR(iso: string): string {
-  return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: TZ, hour: "2-digit", minute: "2-digit",
-  }).format(new Date(iso));
-}
-
 /** "terça-feira, 24/06" — dia por extenso pro card de pedido (que vive fora da
  *  seção do dia, então precisa carregar a data com ele). */
 function dayBR(iso: string): string {
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: TZ, weekday: "long", day: "2-digit", month: "2-digit",
+  }).format(new Date(iso));
+}
+
+function ymdBR(iso: string): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(iso));
+}
+
+function hmBR(iso: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
   }).format(new Date(iso));
 }
 
@@ -72,6 +86,9 @@ export function AppointmentCard({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [editingTime, setEditingTime] = useState(false);
+  const [editDate, setEditDate] = useState(() => ymdBR(appt.starts_at));
+  const [editTime, setEditTime] = useState(() => hmBR(appt.starts_at));
 
   const totalCents = appt.total_cents ?? appt.amount_cents;
   const depositCents = appt.deposit_cents ?? appt.amount_cents;
@@ -81,6 +98,7 @@ export function AppointmentCard({
   const dueOnDay = !finalPaid && remainingCents > 0;
   const isCompleted = appt.status === "completed";
   const isRequest = appt.status === "pending_payment"; // pedido aguardando a Gaby confirmar
+  const canEditTime = isRequest || appt.status === "confirmed";
 
   const phoneDigits = String(appt.client_phone).replace(/\D/g, "");
 
@@ -92,6 +110,20 @@ export function AppointmentCard({
       } catch (e) {
         setError(e instanceof Error ? e.message : "Erro inesperado");
       }
+    });
+  }
+
+  function submitReschedule(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    startTransition(async () => {
+      const res = await rescheduleAppointment({
+        appointmentId: appt.id,
+        dateYmd: editDate,
+        startTime: editTime,
+      });
+      if (res.ok) setEditingTime(false);
+      else setError(res.error);
     });
   }
 
@@ -110,7 +142,7 @@ export function AppointmentCard({
             </p>
           )}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-serif text-xl tabular-nums text-ink">{timeBR(appt.starts_at)}</span>
+            <span className="font-serif text-xl tabular-nums text-ink">{timeRangeBR(appt.starts_at, appt.ends_at)}</span>
             {isRequest && (
               <span className="inline-flex items-center gap-1 text-xs text-terra bg-terra-soft/25 rounded-full px-2.5 py-0.5">
                 <AlertCircle className="size-3" /> Pedido · confirme
@@ -141,15 +173,30 @@ export function AppointmentCard({
           <p className="font-medium text-ink mt-1 truncate">{appt.client_name}</p>
           <p className="text-sm text-ink-soft mt-0.5">{serviceName}</p>
         </div>
-        <a
-          href={`https://wa.me/${phoneDigits}`}
-          target="_blank"
-          rel="noopener"
-          className="inline-flex items-center gap-1 text-sm text-sage-700 hover:text-sage-900 transition shrink-0"
-        >
-          <Phone className="size-4" />
-          WhatsApp
-        </a>
+        <div className="shrink-0 flex flex-col items-end gap-2">
+          {canEditTime && (
+            <button
+              type="button"
+              onClick={() => setEditingTime((v) => !v)}
+              disabled={pending}
+              className="inline-flex items-center gap-1 rounded-full border border-sage-200 bg-sage-50 px-3 py-1.5 text-sm font-medium text-sage-700 hover:bg-sage-100 transition disabled:opacity-50"
+            >
+              <CalendarClock className="size-4" />
+              Editar horário
+            </button>
+          )}
+          {phoneDigits && (
+            <a
+              href={`https://wa.me/${phoneDigits}`}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-1 text-sm text-sage-700 hover:text-sage-900 transition"
+            >
+              <Phone className="size-4" />
+              WhatsApp
+            </a>
+          )}
+        </div>
       </header>
 
       {/* Valores */}
@@ -185,6 +232,44 @@ export function AppointmentCard({
 
       {appt.notes && (
         <p className="mt-3 text-sm text-ink-soft italic">&ldquo;{appt.notes}&rdquo;</p>
+      )}
+
+      {editingTime && (
+        <form
+          onSubmit={submitReschedule}
+          className="mt-3 rounded-[0.9rem] bg-cream-soft hairline p-3 space-y-3"
+        >
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block">
+              <span className="block text-xs font-medium text-ink-soft mb-1">Data</span>
+              <input
+                type="date"
+                value={editDate}
+                onChange={(e) => setEditDate(e.target.value)}
+                required
+                className="w-full rounded-xl bg-paper hairline px-3 py-2 text-sm text-ink outline-none focus:ring-2 focus:ring-sage-100"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-xs font-medium text-ink-soft mb-1">Início</span>
+              <input
+                type="time"
+                value={editTime}
+                onChange={(e) => setEditTime(e.target.value)}
+                required
+                className="w-full rounded-xl bg-paper hairline px-3 py-2 text-sm text-ink outline-none focus:ring-2 focus:ring-sage-100"
+              />
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <ActionButton type="submit" pending={pending} tone="primary">
+              <Save className="size-4" /> Salvar horário
+            </ActionButton>
+            <ActionButton onClick={() => setEditingTime(false)} pending={pending} tone="ghost">
+              Voltar
+            </ActionButton>
+          </div>
+        </form>
       )}
 
       {error && (
@@ -251,12 +336,13 @@ export function AppointmentCard({
 }
 
 function ActionButton({
-  children, onClick, pending, tone,
+  children, onClick, pending, tone, type = "button",
 }: {
   children: React.ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   pending: boolean;
   tone: "primary" | "secondary" | "danger" | "ghost";
+  type?: "button" | "submit";
 }) {
   const styles = {
     primary: "bg-sage-gradient text-cream border-transparent hover:opacity-95",
@@ -267,7 +353,7 @@ function ActionButton({
 
   return (
     <button
-      type="button"
+      type={type}
       onClick={onClick}
       disabled={pending}
       className={cn(

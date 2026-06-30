@@ -2,10 +2,12 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, ChevronDown, Plus, Lock, Phone, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, Plus, Phone, CheckCircle2 } from "lucide-react";
 import { cn, formatBRL } from "@/lib/utils";
+import { addMinutesIso, CALENDAR_KIND_META, timeRangeBR } from "@/lib/make/calendar";
+import type { MakeCalendarKind, YogaClassEvent } from "@/lib/make/types";
 import { AppointmentCard } from "./appointment-card";
-import { BlockCard } from "./block-card";
+import { EventCard } from "./event-card";
 
 type Appt = {
   id: string;
@@ -34,6 +36,7 @@ type OneOff = {
   start_time: string | null;
   end_time: string | null;
   reason: string | null;
+  kind?: Exclude<MakeCalendarKind, "make"> | null;
 };
 type Recurring = {
   id: string;
@@ -41,6 +44,7 @@ type Recurring = {
   start_time: string;
   end_time: string;
   reason: string | null;
+  kind?: Exclude<MakeCalendarKind, "make"> | null;
 };
 
 const TZ = "America/Sao_Paulo";
@@ -117,10 +121,12 @@ export function AgendaCalendar({
   appointments,
   oneOffBlocks,
   recurringBlocks,
+  yogaClasses,
 }: {
   appointments: Appt[];
   oneOffBlocks: OneOff[];
   recurringBlocks: Recurring[];
+  yogaClasses: YogaClassEvent[];
 }) {
   const today = todayYmd();
   const [sel, setSel] = useState(today);
@@ -201,6 +207,16 @@ export function AgendaCalendar({
     return m;
   }, [recurringBlocks]);
 
+  const yogaByDay = useMemo(() => {
+    const m = new Map<string, YogaClassEvent[]>();
+    for (const c of yogaClasses) {
+      const k = dayKeyBR(c.starts_at);
+      if (!m.has(k)) m.set(k, []);
+      m.get(k)!.push(c);
+    }
+    return m;
+  }, [yogaClasses]);
+
   const cells = useMemo(() => buildCells(anchor.year, anchor.month), [anchor]);
 
   const selAppts = (apptsByDay.get(sel) ?? []).slice().sort((a, b) =>
@@ -208,8 +224,12 @@ export function AgendaCalendar({
   );
   const selOneOff = oneOffByDay.get(sel) ?? [];
   const selRecurring = recurringByWeekday.get(weekdayOf(sel)) ?? [];
+  const selYoga = (yogaByDay.get(sel) ?? []).slice().sort((a, b) =>
+    timeKeyBR(a.starts_at).localeCompare(timeKeyBR(b.starts_at)),
+  );
   const dayCount = selAppts.length;
   const dayRevenue = selAppts.reduce((s, a) => s + (a.total_cents ?? a.amount_cents ?? 0), 0);
+  const otherEventCount = selOneOff.length + selRecurring.length + selYoga.length;
 
   type DayEntry = { sort: string; render: React.ReactNode };
   const entries: DayEntry[] = [
@@ -220,26 +240,44 @@ export function AgendaCalendar({
     ...selOneOff.map((b) => ({
       sort: b.all_day ? "00:00" : hm(b.start_time),
       render: (
-        <BlockCard
+        <EventCard
           key={b.id}
           id={b.id}
+          kind={b.kind ?? "block"}
           title={b.reason || "Horário bloqueado"}
-          subtitle={b.all_day ? "Dia inteiro" : `${hm(b.start_time)} → ${hm(b.end_time)}`}
+          subtitle={b.all_day ? "Dia inteiro" : `${hm(b.start_time)} até ${hm(b.end_time)}`}
         />
       ),
     })),
     ...selRecurring.map((r) => ({
       sort: hm(r.start_time),
       render: (
-        <BlockCard
+        <EventCard
           key={r.id}
           id={r.id}
+          kind={r.kind ?? "block"}
           recurring
           title={r.reason || "Bloqueio fixo"}
-          subtitle={`${hm(r.start_time)} → ${hm(r.end_time)} · toda semana`}
+          subtitle={`${hm(r.start_time)} até ${hm(r.end_time)} · toda semana`}
         />
       ),
     })),
+    ...selYoga.map((c) => {
+      const endsAt = addMinutesIso(c.starts_at, c.duration_minutes);
+      return {
+        sort: timeKeyBR(c.starts_at),
+        render: (
+          <EventCard
+            key={`yoga-${c.id}`}
+            id={c.id}
+            kind="yoga"
+            readonly
+            title={c.title}
+            subtitle={`${timeRangeBR(c.starts_at, endsAt)}${c.location ? ` · ${c.location}` : ""}`}
+          />
+        ),
+      };
+    }),
   ].sort((a, b) => a.sort.localeCompare(b.sort));
 
   function shiftMonth(delta: number) {
@@ -293,44 +331,6 @@ export function AgendaCalendar({
                 visitNumber={visitNumberOf(a)}
               />
             ))}
-          </div>
-        </section>
-      )}
-
-      {/* Confirmados recentemente — referência rápida pra Gaby */}
-      {recentlyConfirmed.length > 0 && (
-        <section>
-          <h2 className="text-xs uppercase tracking-[0.18em] font-semibold mb-3 text-sage-700 inline-flex items-center gap-1.5">
-            <CheckCircle2 className="size-3.5" /> Confirmados recentemente
-          </h2>
-          <div className="space-y-2">
-            {recentlyConfirmed.map((a) => {
-              const phoneDigits = String(a.client_phone).replace(/\D/g, "");
-              return (
-                <div
-                  key={a.id}
-                  className="flex items-center justify-between gap-3 rounded-[1.1rem] bg-paper hairline elev-soft p-3.5"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-sage-700 capitalize">
-                      {dayTimeShortBR(a.starts_at)}
-                    </p>
-                    <p className="font-medium text-ink mt-0.5 truncate">{a.client_name}</p>
-                    <p className="text-sm text-ink-soft mt-0.5 truncate">{a.serviceName}</p>
-                  </div>
-                  {phoneDigits && (
-                    <a
-                      href={`https://wa.me/${phoneDigits}`}
-                      target="_blank"
-                      rel="noopener"
-                      className="inline-flex items-center gap-1 text-sm text-sage-700 hover:text-sage-900 transition shrink-0"
-                    >
-                      <Phone className="size-4" /> WhatsApp
-                    </a>
-                  )}
-                </div>
-              );
-            })}
           </div>
         </section>
       )}
@@ -434,9 +434,16 @@ export function AgendaCalendar({
           {cells.map((ymd, i) => {
             if (!ymd) return <div key={i} aria-hidden />;
             const count = apptsByDay.get(ymd)?.length ?? 0;
-            const blocked =
-              (oneOffByDay.get(ymd)?.length ?? 0) > 0 ||
-              (recurringByWeekday.get(weekdayOf(ymd))?.length ?? 0) > 0;
+            const kinds = new Set<MakeCalendarKind>();
+            if (count > 0) kinds.add("make");
+            if ((yogaByDay.get(ymd)?.length ?? 0) > 0) kinds.add("yoga");
+            for (const b of oneOffByDay.get(ymd) ?? []) kinds.add(b.kind ?? "block");
+            for (const r of recurringByWeekday.get(weekdayOf(ymd)) ?? []) kinds.add(r.kind ?? "block");
+            const dayEventCount =
+              count +
+              (yogaByDay.get(ymd)?.length ?? 0) +
+              (oneOffByDay.get(ymd)?.length ?? 0) +
+              (recurringByWeekday.get(weekdayOf(ymd))?.length ?? 0);
             const isToday = ymd === today;
             const isSelected = ymd === sel;
             const dayNum = Number(ymd.slice(8, 10));
@@ -453,11 +460,11 @@ export function AgendaCalendar({
                       ? "bg-sage-50 text-ink ring-1 ring-sage-300"
                       : "text-ink hover:bg-sage-50",
                 )}
-                aria-label={`Dia ${dayNum}${count ? `, ${count} agendamento(s)` : ""}`}
+                aria-label={`Dia ${dayNum}${dayEventCount ? `, ${dayEventCount} evento(s)` : ""}`}
                 aria-pressed={isSelected}
               >
                 <span className="tabular-nums leading-none mt-0.5">{dayNum}</span>
-                <span className="mt-auto flex items-center gap-1 h-3.5">
+                <span className="mt-auto flex items-center justify-center gap-1 h-4 max-w-full">
                   {count > 0 && (
                     <span
                       className={cn(
@@ -468,11 +475,16 @@ export function AgendaCalendar({
                       {count}
                     </span>
                   )}
-                  {blocked && (
-                    <Lock
-                      className={cn("size-3", isSelected ? "text-cream/80" : "text-ink-mute")}
+                  {Array.from(kinds).slice(0, 4).map((kind) => (
+                    <span
+                      key={kind}
+                      className={cn(
+                        "size-1.5 rounded-full",
+                        CALENDAR_KIND_META[kind].dotClass,
+                        isSelected && "ring-1 ring-cream/70",
+                      )}
                     />
-                  )}
+                  ))}
                 </span>
               </button>
             );
@@ -488,7 +500,7 @@ export function AgendaCalendar({
 
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="rounded-[1.1rem] bg-cream-soft hairline p-3.5">
-            <p className="text-xs uppercase tracking-wider text-ink-soft">Agendamentos</p>
+            <p className="text-xs uppercase tracking-wider text-ink-soft">Makes</p>
             <p className="font-serif text-2xl text-ink mt-1 tabular-nums">{dayCount}</p>
           </div>
           <div className="rounded-[1.1rem] bg-cream-soft hairline p-3.5">
@@ -496,6 +508,12 @@ export function AgendaCalendar({
             <p className="font-serif text-2xl text-sage-700 mt-1 tabular-nums">{formatBRL(dayRevenue)}</p>
           </div>
         </div>
+
+        {otherEventCount > 0 && (
+          <p className="-mt-2 mb-4 text-sm text-ink-soft">
+            {otherEventCount} outro{otherEventCount > 1 ? "s" : ""} compromisso{otherEventCount > 1 ? "s" : ""} no dia.
+          </p>
+        )}
 
         {entries.length === 0 ? (
           <div className="rounded-[1.25rem] bg-paper/60 hairline p-8 text-center">
@@ -511,6 +529,44 @@ export function AgendaCalendar({
           <div className="space-y-3">{entries.map((e) => e.render)}</div>
         )}
       </section>
+
+      {/* Confirmados recentemente — referência rápida pra Gaby */}
+      {recentlyConfirmed.length > 0 && (
+        <section>
+          <h2 className="text-xs uppercase tracking-[0.18em] font-semibold mb-3 text-sage-700 inline-flex items-center gap-1.5">
+            <CheckCircle2 className="size-3.5" /> Confirmados recentemente
+          </h2>
+          <div className="space-y-2">
+            {recentlyConfirmed.map((a) => {
+              const phoneDigits = String(a.client_phone).replace(/\D/g, "");
+              return (
+                <div
+                  key={a.id}
+                  className="flex items-center justify-between gap-3 rounded-[1.1rem] bg-paper hairline elev-soft p-3.5"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-sage-700 capitalize">
+                      {dayTimeShortBR(a.starts_at)}
+                    </p>
+                    <p className="font-medium text-ink mt-0.5 truncate">{a.client_name}</p>
+                    <p className="text-sm text-ink-soft mt-0.5 truncate">{a.serviceName}</p>
+                  </div>
+                  {phoneDigits && (
+                    <a
+                      href={`https://wa.me/${phoneDigits}`}
+                      target="_blank"
+                      rel="noopener"
+                      className="inline-flex items-center gap-1 text-sm text-sage-700 hover:text-sage-900 transition shrink-0"
+                    >
+                      <Phone className="size-4" /> WhatsApp
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

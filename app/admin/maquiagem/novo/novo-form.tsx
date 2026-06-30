@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, AlertCircle, Save, CalendarOff, Users } from "lucide-react";
+import { Loader2, AlertCircle, Save, CalendarDays, Lock, PartyPopper, StretchHorizontal, Users } from "lucide-react";
 import { cn, formatPhoneBR } from "@/lib/utils";
 import { createManualAppointment, createBlock, searchMakeClients } from "../actions";
 
@@ -73,10 +73,10 @@ export function NovoForm({ services }: { services: Service[] }) {
 
       <div className="grid grid-cols-2 gap-1 bg-cream-soft hairline rounded-2xl p-1">
         <TabBtn active={tab === "appt"} onClick={() => setTab("appt")}>
-          Agendamento
+          Make
         </TabBtn>
         <TabBtn active={tab === "block"} onClick={() => setTab("block")}>
-          Bloqueio
+          Evento
         </TabBtn>
       </div>
 
@@ -260,6 +260,7 @@ function BlockForm({ onDone }: { onDone: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [date, setDate] = useState(todayYmd());
+  const [kind, setKind] = useState<"commitment" | "party" | "block" | "yoga">("commitment");
   const [recurring, setRecurring] = useState(false);
   const [allDay, setAllDay] = useState(false);
   const [start, setStart] = useState("");
@@ -276,6 +277,7 @@ function BlockForm({ onDone }: { onDone: () => void }) {
         startTime: start,
         endTime: end,
         reason,
+        kind,
         recurring,
       });
       if (res.ok) onDone();
@@ -291,8 +293,34 @@ function BlockForm({ onDone }: { onDone: () => void }) {
       }}
       className="space-y-5"
     >
-      <Field label="Motivo (opcional)">
-        <input value={reason} onChange={(e) => setReason(e.target.value)} className={inputCls} placeholder="Ex: Yoga, Folga, Almoço" />
+      <div>
+        <span className="block text-sm font-medium text-ink mb-1.5">Tipo de evento</span>
+        <div className="grid grid-cols-2 gap-2">
+          <KindBtn active={kind === "commitment"} onClick={() => setKind("commitment")}>
+            <CalendarDays className="size-4" /> Compromisso
+          </KindBtn>
+          <KindBtn active={kind === "party"} onClick={() => setKind("party")}>
+            <PartyPopper className="size-4" /> Festa
+          </KindBtn>
+          <KindBtn active={kind === "block"} onClick={() => setKind("block")}>
+            <Lock className="size-4" /> Bloqueio
+          </KindBtn>
+          <KindBtn active={kind === "yoga"} onClick={() => setKind("yoga")}>
+            <StretchHorizontal className="size-4" /> Yoga manual
+          </KindBtn>
+        </div>
+        <p className="mt-2 text-xs text-ink-soft">
+          Eventos bloqueiam a disponibilidade da maquiagem nesse horário.
+        </p>
+      </div>
+
+      <Field label="Nome do evento (opcional)">
+        <input
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          className={inputCls}
+          placeholder="Ex: Casamento da Ana, Yoga, compromisso pessoal"
+        />
       </Field>
 
       <Field label="Data">
@@ -324,7 +352,7 @@ function BlockForm({ onDone }: { onDone: () => void }) {
             onChange={(e) => setAllDay(e.target.checked)}
             className="size-4 rounded border-sand text-sage-700 focus:ring-sage-200"
           />
-          Bloquear o dia inteiro
+          Evento de dia inteiro
         </label>
       )}
 
@@ -342,7 +370,7 @@ function BlockForm({ onDone }: { onDone: () => void }) {
       {error && <ErrorLine>{error}</ErrorLine>}
 
       <SubmitBtn pending={pending} tone="neutral">
-        <CalendarOff className="size-4" /> Salvar bloqueio
+        <CalendarDays className="size-4" /> Salvar evento
       </SubmitBtn>
     </form>
   );
@@ -359,6 +387,30 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
         "rounded-[0.85rem] py-2 text-sm font-medium transition",
         active ? "bg-paper text-ink elev-soft" : "text-ink-soft hover:text-ink",
       )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function KindBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "min-h-11 inline-flex items-center justify-center gap-1.5 rounded-[0.85rem] px-2.5 py-2 text-sm font-medium transition",
+        active ? "bg-paper text-ink elev-soft" : "bg-cream-soft hairline text-ink-soft hover:text-ink",
+      )}
+      aria-pressed={active}
     >
       {children}
     </button>

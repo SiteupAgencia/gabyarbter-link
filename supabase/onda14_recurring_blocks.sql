@@ -17,6 +17,8 @@ create table if not exists public.make_recurring_blocks (
   start_time    time not null,
   end_time      time not null,
   reason        text,
+  kind          text not null default 'block'
+                check (kind in ('block', 'commitment', 'party', 'yoga')),
   active        boolean not null default true,
   created_at    timestamptz not null default now(),
   check (end_time > start_time)
@@ -24,6 +26,8 @@ create table if not exists public.make_recurring_blocks (
 
 create index if not exists make_recurring_blocks_weekday_idx
   on public.make_recurring_blocks(weekday) where active;
+create index if not exists make_recurring_blocks_kind_idx
+  on public.make_recurring_blocks(kind) where active;
 
 -- ---------- RLS ----------
 alter table public.make_recurring_blocks enable row level security;

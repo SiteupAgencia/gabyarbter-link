@@ -7,6 +7,8 @@ export type MakeServiceSlug =
 
 export type MakePaymentMethod = "pix" | "credit_card" | "cash" | "stub";
 
+export type MakeCalendarKind = "make" | "yoga" | "commitment" | "party" | "block";
+
 export type MakeAppointmentStatus =
   | "pending_payment"
   | "confirmed"
@@ -44,6 +46,7 @@ export type MakeBlockedDate = {
   start_time: string | null;
   end_time: string | null;
   reason: string | null;
+  kind: Exclude<MakeCalendarKind, "make">;
   created_at: string;
 };
 
@@ -53,8 +56,17 @@ export type MakeRecurringBlock = {
   start_time: string; // 'HH:MM:SS'
   end_time: string;
   reason: string | null;
+  kind: Exclude<MakeCalendarKind, "make">;
   active: boolean;
   created_at: string;
+};
+
+export type YogaClassEvent = {
+  id: string;
+  title: string;
+  starts_at: string;
+  duration_minutes: number;
+  location: string | null;
 };
 
 export type MakeAppointment = {
