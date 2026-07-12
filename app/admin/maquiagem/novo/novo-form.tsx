@@ -311,8 +311,10 @@ function ApptForm({ services, onDone }: { services: Service[]; onDone: () => voi
             <button
               type="button"
               onClick={() => {
-                setDurationMin(conflictPrompt.suggestedDurationMin);
-                submit({ duration: conflictPrompt.suggestedDurationMin });
+                const suggestedDuration = conflictPrompt.suggestedDurationMin;
+                if (suggestedDuration == null) return;
+                setDurationMin(suggestedDuration);
+                submit({ duration: suggestedDuration });
               }}
               disabled={pending}
               className="w-full inline-flex items-center justify-center gap-2 rounded-[0.9rem] bg-paper hairline px-4 py-2.5 text-sm font-medium text-ink hover:bg-cream-soft transition disabled:opacity-50"
