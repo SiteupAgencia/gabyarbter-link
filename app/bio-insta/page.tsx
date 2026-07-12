@@ -47,6 +47,7 @@ const URL_CURSO_AUTOMAQUIAGEM = "https://pay.hotmart.com/Y79914073O";
 const URL_INSTAGRAM = "https://www.instagram.com/gabyarbter/";
 const URL_WHATSAPP = "https://wa.me/message/E6RZKY2Y72LEB1";
 const URL_YOUTUBE_AULA = "https://www.youtube.com/watch?v=p1HKdf0oOI8";
+const URL_YOUTUBE_CANAL = "https://www.youtube.com/@gabyarbter";
 
 export default function Home() {
   return (
