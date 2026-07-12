@@ -76,6 +76,7 @@ create table if not exists public.make_appointments (
   mp_payment_id       text,
   mp_status           text,
   notes               text,
+  allow_overlap       boolean not null default false,
   created_at          timestamptz not null default now(),
   confirmed_at        timestamptz,
   cancelled_at        timestamptz,
@@ -92,7 +93,7 @@ alter table public.make_appointments drop constraint if exists make_no_overlap;
 alter table public.make_appointments add constraint make_no_overlap
   exclude using gist (
     tstzrange(starts_at, ends_at, '[)') with &&
-  ) where (status in ('pending_payment', 'confirmed'));
+  ) where (status in ('pending_payment', 'confirmed') and allow_overlap = false);
 
 -- ---------- 5. make_settings (buffer, antecedência etc) ----------
 create table if not exists public.make_settings (

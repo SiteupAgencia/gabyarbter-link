@@ -5,11 +5,25 @@ import { createClient } from "@/lib/supabase/server";
 import { combineDateTime, weekdayInBR } from "@/lib/make/slots";
 import { notifyClientConfirmed } from "@/lib/make/notify";
 import { toE164 } from "@/lib/make/phone";
+import {
+  resolveManualAppointmentWindow,
+  type AppointmentConflict,
+} from "@/lib/make/manual-overlap";
 
 type PaymentMethod = "cash" | "pix" | "credit_card";
 type ManualEventKind = "block" | "commitment" | "party" | "yoga";
 
-type ActionResult = { ok: true; id: string } | { ok: false; error: string };
+type ActionResult =
+  | { ok: true; id: string }
+  | { ok: false; error: string }
+  | {
+      ok: false;
+      kind: "appointment_conflict";
+      error: string;
+      conflict: AppointmentConflict;
+      requestedDurationMin: number;
+      suggestedDurationMin: number | null;
+    };
 const MANUAL_EVENT_KINDS = new Set<ManualEventKind>(["block", "commitment", "party", "yoga"]);
 
 export async function markFinalPaid(appointmentId: string, method: PaymentMethod) {
@@ -196,7 +210,11 @@ async function findMakeWindowConflict(
   startsAt: Date,
   endsAt: Date,
   excludeAppointmentId?: string,
-): Promise<string | null> {
+): Promise<
+  | { kind: "appointment"; appointment: AppointmentConflict }
+  | { kind: "blocked"; error: string }
+  | null
+> {
   const startIso = startsAt.toISOString();
   const endIso = endsAt.toISOString();
 
@@ -212,7 +230,18 @@ async function findMakeWindowConflict(
 
   const { data: appts, error: apptErr } = await apptQuery;
   if (apptErr) throw apptErr;
-  if ((appts ?? []).length > 0) return "Já existe uma make nesse horário.";
+  const conflictingAppt = appts?.[0];
+  if (conflictingAppt) {
+    return {
+      kind: "appointment",
+      appointment: {
+        id: String(conflictingAppt.id),
+        clientName: String(conflictingAppt.client_name),
+        startsAt: String(conflictingAppt.starts_at),
+        endsAt: String(conflictingAppt.ends_at),
+      },
+    };
+  }
 
   const ymd = dayYmd(startsAt);
   const { data: blocks, error: blockErr } = await supabase
@@ -222,12 +251,12 @@ async function findMakeWindowConflict(
   if (blockErr) throw blockErr;
 
   for (const b of blocks ?? []) {
-    if (b.all_day) return "Esse dia tem outro evento de dia inteiro.";
+    if (b.all_day) return { kind: "blocked", error: "Esse dia tem outro evento de dia inteiro." };
     if (!b.start_time || !b.end_time) continue;
     const bStart = combineDateTime(ymd, b.start_time);
     const bEnd = combineDateTime(ymd, b.end_time);
     if (overlaps(startsAt, endsAt, bStart, bEnd)) {
-      return "Esse horário cruza com outro evento da agenda.";
+      return { kind: "blocked", error: "Esse horário cruza com outro evento da agenda." };
     }
   }
 
@@ -243,7 +272,7 @@ async function findMakeWindowConflict(
     const rStart = combineDateTime(ymd, r.start_time);
     const rEnd = combineDateTime(ymd, r.end_time);
     if (overlaps(startsAt, endsAt, rStart, rEnd)) {
-      return "Esse horário cruza com um evento fixo da agenda.";
+      return { kind: "blocked", error: "Esse horário cruza com um evento fixo da agenda." };
     }
   }
 
@@ -262,7 +291,7 @@ async function findMakeWindowConflict(
     const cStart = new Date(c.starts_at);
     const cEnd = new Date(cStart.getTime() + Number(c.duration_minutes) * 60_000);
     if (overlaps(startsAt, endsAt, cStart, cEnd)) {
-      return "Esse horário cruza com uma aula de yoga.";
+      return { kind: "blocked", error: "Esse horário cruza com uma aula de yoga." };
     }
   }
 
@@ -281,6 +310,8 @@ export async function createManualAppointment(input: {
   clientPhone: string;
   dateYmd: string;
   startTime: string; // 'HH:MM'
+  durationMin?: number;
+  allowOverlap?: boolean;
   notes?: string;
 }): Promise<ActionResult> {
   const supabase = await createClient();
@@ -303,9 +334,29 @@ export async function createManualAppointment(input: {
 
   const startsAt = combineDateTime(input.dateYmd, input.startTime);
   if (isNaN(startsAt.getTime())) return { ok: false, error: "Data/horário inválidos." };
-  const endsAt = new Date(startsAt.getTime() + service.duration_min * 60_000);
-  const conflict = await findMakeWindowConflict(supabase, startsAt, endsAt);
-  if (conflict) return { ok: false, error: conflict };
+  const durationMin = input.durationMin ?? Number(service.duration_min);
+  const requestedEndsAt = new Date(startsAt.getTime() + durationMin * 60_000);
+  const conflict = await findMakeWindowConflict(supabase, startsAt, requestedEndsAt);
+  if (conflict?.kind === "blocked") return { ok: false, error: conflict.error };
+
+  const window = resolveManualAppointmentWindow({
+    startsAt,
+    durationMin,
+    appointmentConflict: conflict?.kind === "appointment" ? conflict.appointment : null,
+    allowOverlap: input.allowOverlap === true,
+  });
+  if (!window.ok) {
+    if (window.kind === "invalid_duration") return { ok: false, error: window.error };
+    return {
+      ok: false,
+      kind: "appointment_conflict",
+      error: "Já existe uma cliente nesse horário.",
+      conflict: window.conflict,
+      requestedDurationMin: window.requestedDurationMin,
+      suggestedDurationMin: window.suggestedDurationMin,
+    };
+  }
+  const endsAt = window.endsAt;
 
   const { data: appt, error } = await supabase
     .from("make_appointments")
@@ -322,6 +373,7 @@ export async function createManualAppointment(input: {
       payment_method: null,
       confirmed_at: new Date().toISOString(),
       notes: input.notes?.trim() || null,
+      allow_overlap: window.isOverlap,
     })
     .select("id")
     .single();
@@ -368,7 +420,12 @@ export async function rescheduleAppointment(input: {
   const endsAt = new Date(startsAt.getTime() + durationMin * 60_000);
 
   const conflict = await findMakeWindowConflict(supabase, startsAt, endsAt, input.appointmentId);
-  if (conflict) return { ok: false, error: conflict };
+  if (conflict) {
+    return {
+      ok: false,
+      error: conflict.kind === "blocked" ? conflict.error : "Já existe uma make nesse horário.",
+    };
+  }
 
   const { data: updated, error } = await supabase
     .from("make_appointments")

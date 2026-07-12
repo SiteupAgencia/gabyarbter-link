@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, AlertCircle, Save, CalendarDays, Lock, PartyPopper, StretchHorizontal, Users } from "lucide-react";
+import { Loader2, AlertCircle, Save, CalendarDays, Lock, PartyPopper, StretchHorizontal, Users, Clock3 } from "lucide-react";
 import { cn, formatPhoneBR } from "@/lib/utils";
 import { createManualAppointment, createBlock, searchMakeClients } from "../actions";
 
@@ -20,6 +20,14 @@ type Service = {
   name: string;
   price_cents: number;
   duration_min: number;
+};
+
+type AppointmentConflictPrompt = {
+  clientName: string;
+  startsAt: string;
+  endsAt: string;
+  requestedDurationMin: number;
+  suggestedDurationMin: number | null;
 };
 
 const TZ = "America/Sao_Paulo";
@@ -41,6 +49,15 @@ function weekdayLabel(ymd: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return "";
   const d = new Date(`${ymd}T12:00:00-03:00`);
   return new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, weekday: "long" }).format(d);
+}
+
+function timeBR(iso: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(iso));
 }
 
 /** Soma minutos a um horário "HH:MM". Retorna null se passar de 24h. */
@@ -96,6 +113,8 @@ function ApptForm({ services, onDone }: { services: Service[]; onDone: () => voi
   const [date, setDate] = useState(todayYmd());
   const [start, setStart] = useState("");
   const [notes, setNotes] = useState("");
+  const [durationMin, setDurationMin] = useState<number | null>(null);
+  const [conflictPrompt, setConflictPrompt] = useState<AppointmentConflictPrompt | null>(null);
 
   // Dedupe: busca clientes já cadastrados enquanto a Gaby digita nome/telefone,
   // pra ela reaproveitar em vez de criar um cadastro repetido.
@@ -134,9 +153,10 @@ function ApptForm({ services, onDone }: { services: Service[]; onDone: () => voi
   }
 
   const service = services.find((s) => s.id === serviceId) ?? null;
-  const endPreview = service && start ? addMinutes(start, service.duration_min) : null;
+  const effectiveDuration = durationMin ?? service?.duration_min ?? 0;
+  const endPreview = effectiveDuration && start ? addMinutes(start, effectiveDuration) : null;
 
-  function submit() {
+  function submit(options?: { duration?: number; allowOverlap?: boolean }) {
     setError(null);
     startTransition(async () => {
       const res = await createManualAppointment({
@@ -145,11 +165,29 @@ function ApptForm({ services, onDone }: { services: Service[]; onDone: () => voi
         clientPhone: phone,
         dateYmd: date,
         startTime: start,
+        durationMin: options?.duration ?? effectiveDuration,
+        allowOverlap: options?.allowOverlap === true,
         notes,
       });
       if (res.ok) onDone();
-      else setError(res.error);
+      else if ("kind" in res && res.kind === "appointment_conflict") {
+        setConflictPrompt({
+          clientName: res.conflict.clientName,
+          startsAt: res.conflict.startsAt,
+          endsAt: res.conflict.endsAt,
+          requestedDurationMin: res.requestedDurationMin,
+          suggestedDurationMin: res.suggestedDurationMin,
+        });
+      } else {
+        setConflictPrompt(null);
+        setError(res.error);
+      }
     });
+  }
+
+  function clearConflict() {
+    setConflictPrompt(null);
+    setError(null);
   }
 
   if (services.length === 0) {
@@ -210,7 +248,15 @@ function ApptForm({ services, onDone }: { services: Service[]; onDone: () => voi
       )}
 
       <Field label="Serviço">
-        <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} className={inputCls}>
+        <select
+          value={serviceId}
+          onChange={(e) => {
+            setServiceId(e.target.value);
+            setDurationMin(null);
+            clearConflict();
+          }}
+          className={inputCls}
+        >
           {services.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name} · {formatBRL(s.price_cents)} · {s.duration_min}min
@@ -221,17 +267,73 @@ function ApptForm({ services, onDone }: { services: Service[]; onDone: () => voi
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Data">
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className={inputCls} />
+          <input type="date" value={date} onChange={(e) => { setDate(e.target.value); clearConflict(); }} required className={inputCls} />
         </Field>
         <Field label="Horário">
-          <input type="time" value={start} onChange={(e) => setStart(e.target.value)} required className={inputCls} />
+          <input type="time" value={start} onChange={(e) => { setStart(e.target.value); clearConflict(); }} required className={inputCls} />
         </Field>
       </div>
 
       {endPreview && (
         <p className="-mt-2 text-sm text-ink-soft">
-          Termina por volta das <strong className="text-ink">{endPreview}</strong>.
+          Duração de <strong className="text-ink">{effectiveDuration}min</strong> · termina por volta das <strong className="text-ink">{endPreview}</strong>.
         </p>
+      )}
+
+      {conflictPrompt && (
+        <div className="rounded-[1rem] border border-terra-soft/60 bg-terra-soft/[0.10] p-4 space-y-3" role="alert">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="size-5 text-terra shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-ink">Já tem cliente nesse horário</p>
+              <p className="mt-1 text-sm text-ink-soft">
+                <strong className="text-ink">{conflictPrompt.clientName}</strong> está agendada das {timeBR(conflictPrompt.startsAt)} às {timeBR(conflictPrompt.endsAt)}.
+              </p>
+            </div>
+          </div>
+
+          <Field label="Reduzir o tempo deste atendimento">
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={15}
+                step={5}
+                value={effectiveDuration}
+                onChange={(e) => setDurationMin(Number(e.target.value))}
+                className={inputCls}
+                aria-label="Duração do atendimento em minutos"
+              />
+              <span className="text-sm text-ink-soft">min</span>
+            </div>
+          </Field>
+
+          {conflictPrompt.suggestedDurationMin && (
+            <button
+              type="button"
+              onClick={() => {
+                setDurationMin(conflictPrompt.suggestedDurationMin);
+                submit({ duration: conflictPrompt.suggestedDurationMin });
+              }}
+              disabled={pending}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-[0.9rem] bg-paper hairline px-4 py-2.5 text-sm font-medium text-ink hover:bg-cream-soft transition disabled:opacity-50"
+            >
+              <Clock3 className="size-4" /> Ajustar para {conflictPrompt.suggestedDurationMin}min e salvar
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => submit({ duration: effectiveDuration, allowOverlap: true })}
+            disabled={pending}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-[0.9rem] bg-terra px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 transition disabled:opacity-50"
+          >
+            {pending ? <Loader2 className="size-4 animate-spin" /> : <Users className="size-4" />}
+            Encaixar duas clientes mesmo assim
+          </button>
+          <button type="button" onClick={clearConflict} className="w-full text-sm text-ink-soft hover:text-ink transition">
+            Voltar e escolher outro horário
+          </button>
+        </div>
       )}
 
       <Field label="Observações (opcional)">
