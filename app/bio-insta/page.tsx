@@ -46,7 +46,7 @@ const URL_CURSO_AUTOMAQUIAGEM = "https://pay.hotmart.com/Y79914073O";
 
 const URL_INSTAGRAM = "https://www.instagram.com/gabyarbter/";
 const URL_WHATSAPP = "https://wa.me/message/E6RZKY2Y72LEB1";
-const URL_YOUTUBE_CANAL = "https://www.youtube.com/@gabyarbter";
+const URL_YOUTUBE_AULA = "https://www.youtube.com/watch?v=p1HKdf0oOI8";
 
 export default function Home() {
   return (
@@ -129,10 +129,10 @@ function Cards() {
   return (
     <section className="space-y-3 fade-up" style={{ animationDelay: "120ms" }}>
       <PortaCard
-        href={URL_YOUTUBE_CANAL}
+        href={URL_YOUTUBE_AULA}
         icon={<PlayCircle className="size-5" />}
-        title="Canal de yoga no YouTube"
-        subtitle="Aulas e práticas gratuitas"
+        title="Aula de yoga no YouTube"
+        subtitle="Assista à nova prática gratuita"
         tone="soft"
       />
       <PortaCard
