@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { AlertCircle, Loader2, Trash2 } from "lucide-react";
 import { CALENDAR_KIND_META } from "@/lib/make/calendar";
 import type { MakeCalendarKind } from "@/lib/make/types";
@@ -16,6 +17,9 @@ export function EventCard({
   subtitle,
   recurring = false,
   readonly = false,
+  eyebrow,
+  actionHref,
+  actionLabel,
 }: {
   id: string;
   kind: ManualKind;
@@ -23,6 +27,9 @@ export function EventCard({
   subtitle: string;
   recurring?: boolean;
   readonly?: boolean;
+  eyebrow?: string;
+  actionHref?: string;
+  actionLabel?: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +54,7 @@ export function EventCard({
           <Icon className="size-4 text-ink-soft mt-1 shrink-0" />
           <div className="min-w-0">
             <p className="text-[11px] uppercase tracking-[0.16em] text-ink-mute font-semibold">
-              {recurring ? `${meta.label} fixo` : meta.label}
+              {eyebrow ?? (recurring ? `${meta.label} fixo` : meta.label)}
             </p>
             <p className="font-medium text-ink truncate">{title}</p>
             <p className="text-sm text-ink-soft mt-0.5">{subtitle}</p>
@@ -65,6 +72,14 @@ export function EventCard({
           </button>
         )}
       </div>
+      {actionHref && actionLabel && (
+        <Link
+          href={actionHref}
+          className="mt-3 inline-flex items-center rounded-full bg-sage-700 px-3 py-1.5 text-xs font-medium text-cream transition hover:bg-sage-800"
+        >
+          {actionLabel}
+        </Link>
+      )}
       {error && (
         <p className="mt-2 text-xs text-terra inline-flex items-center gap-1.5">
           <AlertCircle className="size-3.5" />

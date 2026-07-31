@@ -58,6 +58,30 @@ const WEEKDAYS_FULL = [
   "quinta-feira", "sexta-feira", "sábado",
 ];
 
+const EDITORIAL_REMINDERS = [
+  {
+    weekday: 0,
+    sort: "20:00",
+    routine: "domingo",
+    title: "Abrir a semana com presença",
+    subtitle: "Domingo à noite · reflexão para o grupo + Story",
+  },
+  {
+    weekday: 1,
+    sort: "09:00",
+    routine: "segunda",
+    title: "Traduzir uma ideia em conteúdo",
+    subtitle: "Segunda · Reel ou carrossel de yoga, ayurveda ou filosofia",
+  },
+  {
+    weekday: 4,
+    sort: "09:00",
+    routine: "quinta",
+    title: "Fazer um convite gentil",
+    subtitle: "Quinta · Story e convite para Sopro, make ou Automake",
+  },
+] as const;
+
 const pad = (n: number) => String(n).padStart(2, "0");
 
 function dayKeyBR(iso: string): string {
@@ -76,6 +100,9 @@ function todayYmd(): string {
 /** Dia da semana (0=dom) a partir de 'YYYY-MM-DD', sem depender do fuso do browser. */
 function weekdayOf(ymd: string): number {
   return new Date(`${ymd}T12:00:00Z`).getUTCDay();
+}
+function editorialReminderForDay(ymd: string) {
+  return EDITORIAL_REMINDERS.find((reminder) => reminder.weekday === weekdayOf(ymd));
 }
 function hm(t: string | null): string {
   return t ? t.slice(0, 5) : "";
@@ -227,9 +254,10 @@ export function AgendaCalendar({
   const selYoga = (yogaByDay.get(sel) ?? []).slice().sort((a, b) =>
     timeKeyBR(a.starts_at).localeCompare(timeKeyBR(b.starts_at)),
   );
+  const editorialReminder = editorialReminderForDay(sel);
   const dayCount = selAppts.length;
   const dayRevenue = selAppts.reduce((s, a) => s + (a.total_cents ?? a.amount_cents ?? 0), 0);
-  const otherEventCount = selOneOff.length + selRecurring.length + selYoga.length;
+  const otherEventCount = selOneOff.length + selRecurring.length + selYoga.length + Number(Boolean(editorialReminder));
 
   type DayEntry = { sort: string; render: React.ReactNode };
   const entries: DayEntry[] = [
@@ -278,6 +306,24 @@ export function AgendaCalendar({
         ),
       };
     }),
+    ...(editorialReminder
+      ? [{
+          sort: editorialReminder.sort,
+          render: (
+            <EventCard
+              key={`editorial-${editorialReminder.routine}`}
+              id={`editorial-${editorialReminder.routine}`}
+              kind="commitment"
+              readonly
+              eyebrow="Pauta editorial"
+              title={editorialReminder.title}
+              subtitle={editorialReminder.subtitle}
+              actionHref={`/sopro/admin/conteudo?rotina=${editorialReminder.routine}`}
+              actionLabel="Criar conteúdo"
+            />
+          ),
+        }]
+      : []),
   ].sort((a, b) => a.sort.localeCompare(b.sort));
 
   function shiftMonth(delta: number) {
@@ -434,6 +480,7 @@ export function AgendaCalendar({
           {cells.map((ymd, i) => {
             if (!ymd) return <div key={i} aria-hidden />;
             const count = apptsByDay.get(ymd)?.length ?? 0;
+            const editorialReminder = editorialReminderForDay(ymd);
             const kinds = new Set<MakeCalendarKind>();
             if (count > 0) kinds.add("make");
             if ((yogaByDay.get(ymd)?.length ?? 0) > 0) kinds.add("yoga");
@@ -443,7 +490,8 @@ export function AgendaCalendar({
               count +
               (yogaByDay.get(ymd)?.length ?? 0) +
               (oneOffByDay.get(ymd)?.length ?? 0) +
-              (recurringByWeekday.get(weekdayOf(ymd))?.length ?? 0);
+              (recurringByWeekday.get(weekdayOf(ymd))?.length ?? 0) +
+              Number(Boolean(editorialReminder));
             const isToday = ymd === today;
             const isSelected = ymd === sel;
             const dayNum = Number(ymd.slice(8, 10));
@@ -485,6 +533,15 @@ export function AgendaCalendar({
                       )}
                     />
                   ))}
+                  {editorialReminder && (
+                    <span
+                      className={cn(
+                        "size-1.5 rounded-full bg-amber-400",
+                        isSelected && "ring-1 ring-cream/70",
+                      )}
+                      title="Pauta editorial"
+                    />
+                  )}
                 </span>
               </button>
             );
