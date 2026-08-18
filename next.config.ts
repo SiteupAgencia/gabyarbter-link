@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: "/",
+        has: [{ type: "host", value: "marca.gabyarbter.com.br" }],
+        destination: "/marca",
+      },
+      {
         source: "/sopro",
         destination: "https://yoga-checkin.vercel.app/sopro",
       },
