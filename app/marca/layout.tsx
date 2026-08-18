@@ -1,4 +1,26 @@
 import type { Metadata } from "next";
+import { Bodoni_Moda, Fraunces, Newsreader } from "next/font/google";
+
+const organic = Fraunces({
+  variable: "--font-serif-organic",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+});
+
+const human = Newsreader({
+  variable: "--font-serif-human",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+});
+
+const fashion = Bodoni_Moda({
+  variable: "--font-serif-fashion",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+});
 
 export const metadata: Metadata = {
   title: "Brand Hub — sistema vivo da marca",
@@ -15,5 +37,5 @@ export const metadata: Metadata = {
 };
 
 export default function BrandLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <div className={`${organic.variable} ${human.variable} ${fashion.variable}`}>{children}</div>;
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Check, Clipboard, Printer, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { Check, Clipboard, Printer } from "lucide-react";
 import styles from "./brand-hub.module.css";
 
 export const COLORS = [
@@ -55,112 +55,6 @@ export function PaletteLab() {
           </span>
         </button>
       ))}
-    </div>
-  );
-}
-
-const days = {
-  domingo: {
-    label: "Domingo à noite",
-    intention: "Conexão",
-    format: "Reel de 15–25s ou foto-carta",
-    opening: "Uma cena real que fecha a semana e abre espaço para a próxima.",
-    cta: "Uma pergunta que a pessoa queira responder ou enviar para alguém.",
-  },
-  segunda: {
-    label: "Segunda",
-    intention: "Autoridade leve",
-    format: "Reel explicativo ou carrossel de 5–7 telas",
-    opening: "Nomeie um estado cotidiano antes de explicar yoga, Ayurveda ou filosofia.",
-    cta: "Salvar para praticar ou compartilhar com uma mulher específica.",
-  },
-  quinta: {
-    label: "Quinta",
-    intention: "Conversão gentil",
-    format: "Story em 3 quadros + Reel curto",
-    opening: "Mostre o ambiente, a prática ou o produto antes de fazer o convite.",
-    cta: "Escolha um caminho: Sopro, direct ou lista de Leveza que se sustenta.",
-  },
-} as const;
-
-const themes = {
-  yoga: {
-    label: "Yoga / Sopro",
-    scene: "tapete usado, sala antes da aula, mãos ajustando o espaço",
-    question: "Em que momento do dia você percebe que se abandonou um pouco?",
-    bridge: "Presença não começa na postura perfeita; começa em notar como você chegou.",
-  },
-  ayurveda: {
-    label: "Ayurveda cotidiano",
-    scene: "chá, panela, janela, óleo ou gesto simples de cozinha",
-    question: "O que o seu corpo está pedindo que a pressa não deixa você ouvir?",
-    bridge: "O nome pode ser antigo. O cuidado precisa caber na vida de hoje.",
-  },
-  beleza: {
-    label: "Beleza e autoimagem",
-    scene: "rosto real, mãos, preparação, textura de pele e luz natural",
-    question: "Você se arruma para se esconder ou para se reconhecer?",
-    bridge: "Beleza aqui não é correção. É um jeito de olhar para si com mais presença.",
-  },
-  filosofia: {
-    label: "Filosofia praticada",
-    scene: "caminhada, diário, luz da manhã ou um minuto antes do celular",
-    question: "O que está, de verdade, nas suas mãos hoje?",
-    bridge: "Uma ideia só ganha corpo quando encontra um gesto possível.",
-  },
-} as const;
-
-export function ContentBuilder() {
-  const [day, setDay] = useState<keyof typeof days>("domingo");
-  const [theme, setTheme] = useState<keyof typeof themes>("yoga");
-  const [copied, setCopied] = useState(false);
-  const result = useMemo(() => ({ ...days[day], ...themes[theme] }), [day, theme]);
-
-  const draft = `${result.label} · ${result.intention}\nFormato: ${result.format}\nCena: ${result.scene}\nGancho: ${result.question}\nIdeia: ${result.bridge}\nCTA: ${result.cta}`;
-
-  async function copyDraft() {
-    await navigator.clipboard.writeText(draft);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1400);
-  }
-
-  return (
-    <div className={styles.builder}>
-      <div className={styles.builderControls}>
-        <label>
-          Quando ela vai postar?
-          <select value={day} onChange={(event) => setDay(event.target.value as keyof typeof days)}>
-            {Object.entries(days).map(([value, item]) => (
-              <option key={value} value={value}>{item.label}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Qual território?
-          <select value={theme} onChange={(event) => setTheme(event.target.value as keyof typeof themes)}>
-            {Object.entries(themes).map(([value, item]) => (
-              <option key={value} value={value}>{item.label}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className={styles.draftCard}>
-        <div className={styles.draftTopline}>
-          <span><Sparkles size={15} /> Rascunho de partida</span>
-          <button type="button" onClick={copyDraft}>
-            {copied ? <Check size={15} /> : <Clipboard size={15} />}
-            {copied ? "Copiado" : "Copiar brief"}
-          </button>
-        </div>
-        <p className={styles.draftTitle}>{result.label} · {result.intention}</p>
-        <dl>
-          <div><dt>Formato</dt><dd>{result.format}</dd></div>
-          <div><dt>Cena</dt><dd>{result.scene}</dd></div>
-          <div><dt>Gancho</dt><dd>“{result.question}”</dd></div>
-          <div><dt>Ideia</dt><dd>{result.bridge}</dd></div>
-          <div><dt>CTA</dt><dd>{result.cta}</dd></div>
-        </dl>
-      </div>
     </div>
   );
 }

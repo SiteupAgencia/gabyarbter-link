@@ -7,7 +7,7 @@ import {
   Heart,
   Send,
 } from "lucide-react";
-import { ContentBuilder, PaletteLab, PrintButton } from "./brand-tools";
+import { PaletteLab, PrintButton } from "./brand-tools";
 import styles from "./brand-hub.module.css";
 
 const nav = [
@@ -61,7 +61,7 @@ export default function BrandHubPage() {
           </p>
           <div className={styles.heroActions}>
             <a className={styles.primaryAction} href="#essencia">Entender a marca <ArrowDown size={18} /></a>
-            <a className={styles.textAction} href="#conteudo">Criar um conteúdo <ArrowUpRight size={18} /></a>
+            <a className={styles.textAction} href="#visual">Ver fontes e cores <ArrowUpRight size={18} /></a>
           </div>
         </div>
         <div className={styles.heroPortrait}>
@@ -109,11 +109,42 @@ export default function BrandHubPage() {
 
         <PaletteLab />
 
+        <div id="fontes" className={styles.typeIntro}>
+          <div>
+            <small>Escolha de tipografia</small>
+            <h3>Qual dessas vozes parece mais a Gaby?</h3>
+          </div>
+          <p>Estamos escolhendo apenas a fonte de títulos e frases. Os textos continuam em <strong>Inter</strong>, porque ela é simples e confortável no celular.</p>
+        </div>
+
+        <div className={styles.fontOptions}>
+          <article className={styles.fontCormorant}>
+            <div><span>Opção A</span><small>Poética e delicada</small></div>
+            <p>Leveza que se sustenta.</p>
+            <footer><strong>Cormorant Garamond</strong><small>A atual. Mais sensível e clássica.</small></footer>
+          </article>
+          <article className={styles.fontFraunces}>
+            <div><span>Opção B</span><small>Orgânica e contemporânea</small></div>
+            <p>Leveza que se sustenta.</p>
+            <footer><strong>Fraunces</strong><small>Mais personalidade e movimento.</small></footer>
+          </article>
+          <article className={styles.fontNewsreader}>
+            <div><span>Opção C</span><small>Nossa recomendação</small></div>
+            <p>Leveza que se sustenta.</p>
+            <footer><strong>Newsreader</strong><small>Humana, serena e boa para yoga + beleza.</small></footer>
+          </article>
+          <article className={styles.fontBodoni}>
+            <div><span>Opção D</span><small>Refinada e fashion</small></div>
+            <p>Leveza que se sustenta.</p>
+            <footer><strong>Bodoni Moda</strong><small>Mais elegante, com força para beleza.</small></footer>
+          </article>
+        </div>
+
         <div className={styles.visualGuide}>
           <div className={styles.typeCard}>
-            <small>Tipografia</small>
-            <p className={styles.serifSample}>Retornar também é prática.</p>
-            <p><strong>Cormorant Garamond</strong> para frases e títulos. <strong>Inter</strong> para tudo que precisa ser lido com facilidade.</p>
+            <small>Como combinar</small>
+            <p className={styles.serifSample}>Título com presença.<br /><em>Texto que respira.</em></p>
+            <p>Uma fonte com personalidade nos títulos. Uma fonte simples nos textos. Não precisamos de uma terceira.</p>
           </div>
           <div className={styles.photoCard}>
             <Image src="/photos/aula-detalhe.jpg" alt="Gaby conduzindo uma prática" fill sizes="(max-width: 760px) 100vw, 45vw" />
@@ -141,12 +172,11 @@ export default function BrandHubPage() {
           <article><Send /><div><small>3 · Agir</small><b>Salvar, responder, enviar ou entrar.</b></div></article>
         </div>
 
-        <div className={styles.builderIntro}>
-          <div><small>Copiloto prático</small><h3>Monte o próximo conteúdo.</h3></div>
-          <p>Escolha o dia e o território. O resultado vira um brief curto para gravar, escrever ou levar à IA do app.</p>
+        <div className={styles.rhythmIntro}>
+          <small>Ritmo da semana</small>
+          <h3>Três dias. Três funções.</h3>
+          <p>A IA do aplicativo ajuda a criar. Aqui, a Gaby só precisa entender o papel de cada dia.</p>
         </div>
-        <ContentBuilder />
-
         <div className={styles.weeklyRhythm}>
           <article><time>Domingo</time><h3>Conectar</h3><p>Uma reflexão ou cena real para abrir a semana.</p></article>
           <article><time>Segunda</time><h3>Ensinar</h3><p>Yoga, Ayurveda, beleza ou filosofia traduzidos para a vida.</p></article>
