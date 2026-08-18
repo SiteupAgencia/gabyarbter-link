@@ -5,21 +5,26 @@ const nextConfig: NextConfig = {
   // (que tem basePath '/sopro'). O usuário vê tudo como gabyarbter.com.br,
   // cookies/sessão Supabase ficam no domínio principal.
   async rewrites() {
-    return [
-      {
-        source: "/",
-        has: [{ type: "host", value: "marca.gabyarbter.com.br" }],
-        destination: "/marca",
-      },
-      {
-        source: "/sopro",
-        destination: "https://yoga-checkin.vercel.app/sopro",
-      },
-      {
-        source: "/sopro/:path*",
-        destination: "https://yoga-checkin.vercel.app/sopro/:path*",
-      },
-    ];
+    return {
+      beforeFiles: [
+        {
+          source: "/",
+          has: [{ type: "host", value: "marca.gabyarbter.com.br" }],
+          destination: "/marca",
+        },
+      ],
+      afterFiles: [
+        {
+          source: "/sopro",
+          destination: "https://yoga-checkin.vercel.app/sopro",
+        },
+        {
+          source: "/sopro/:path*",
+          destination: "https://yoga-checkin.vercel.app/sopro/:path*",
+        },
+      ],
+      fallback: [],
+    };
   },
 
   // Link header pra agent discovery (RFC 8288 + draft api-catalog).
