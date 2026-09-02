@@ -24,13 +24,15 @@ type AsaasWebhook = {
 };
 
 export async function POST(req: Request) {
-  // Validação opcional de token
+  // Token obrigatório: sem ASAAS_WEBHOOK_TOKEN a rota falha fechada e não processa nada.
   const expectedToken = process.env.ASAAS_WEBHOOK_TOKEN;
-  if (expectedToken) {
-    const got = req.headers.get("asaas-access-token");
-    if (got !== expectedToken) {
-      return NextResponse.json({ ok: false, error: "invalid_token" }, { status: 401 });
-    }
+  if (!expectedToken) {
+    console.error("webhook asaas: ASAAS_WEBHOOK_TOKEN ausente; evento ignorado");
+    return NextResponse.json({ ok: false, error: "not_configured" }, { status: 503 });
+  }
+  const got = req.headers.get("asaas-access-token");
+  if (got !== expectedToken) {
+    return NextResponse.json({ ok: false, error: "invalid_token" }, { status: 401 });
   }
 
   const body = (await req.json().catch(() => null)) as AsaasWebhook | null;
