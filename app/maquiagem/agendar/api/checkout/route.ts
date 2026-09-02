@@ -85,10 +85,9 @@ export async function POST(req: Request) {
     if (code === "23P01") {
       return NextResponse.json({ ok: false, error: "slot_taken" }, { status: 409 });
     }
-    return NextResponse.json(
-      { ok: false, error: insertError?.message || "insert_failed" },
-      { status: 500 },
-    );
+    // detalhe do Postgres fica no log do servidor, nunca na resposta pública
+    console.error("checkout insert failed:", insertError?.message);
+    return NextResponse.json({ ok: false, error: "insert_failed" }, { status: 500 });
   }
 
   await notifyGabyNewBooking(appt.id);
