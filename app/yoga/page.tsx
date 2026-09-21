@@ -54,7 +54,7 @@ type Pacote = {
 
 const PACOTES: Pacote[] = [
   { tipo: "avulsa", label: "Aula avulsa",   total: 40, aulas: 1, porAula: 40 },
-  { tipo: "pacote", label: "Pacote 4 aulas", total: 140, aulas: 4, porAula: 35 },
+  { tipo: "pacote", label: "Pacote de 4 aulas", total: 140, aulas: 4, porAula: 35 },
   {
     tipo: "mensal",
     label: "Mensal Sopro",
