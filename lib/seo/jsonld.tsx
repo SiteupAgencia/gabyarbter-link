@@ -161,12 +161,24 @@ export const yogaStudio = {
       {
         "@type": "Offer",
         priceCurrency: "BRL",
+        price: "140.00",
+        availability: "https://schema.org/InStock",
+        itemOffered: {
+          "@type": "Service",
+          name: "Pacote de 4 aulas de yoga",
+          description: "4 aulas sem prazo de validade.",
+          provider: { "@id": `${SITE}/#gaby` },
+        },
+      },
+      {
+        "@type": "Offer",
+        priceCurrency: "BRL",
         price: "180.00",
         availability: "https://schema.org/InStock",
         itemOffered: {
           "@type": "Service",
           name: "Mensal Sopro",
-          description: "4 aulas no mês + passe livre nas quartas-feiras.",
+          description: "1 aula normal + 1 Ashtanga por semana, durante 35 dias.",
           provider: { "@id": `${SITE}/#gaby` },
         },
       },
@@ -234,11 +246,11 @@ export const yogaFaqs: FaqItem[] = [
   },
   {
     q: "Quanto custa a aula de yoga?",
-    a: "Aula avulsa: R$ 40. Pacote de 10 aulas: R$ 320 (R$ 32 por aula). Mensal Sopro: R$ 180 com 4 aulas no mês mais passe livre nas quartas-feiras (Ashtanga ilimitada).",
+    a: "Aula avulsa: R$ 40. Pacote de 4 aulas: R$ 140 (R$ 35 por aula). Pacote de 10 aulas: R$ 320 (R$ 32 por aula). Mensal Sopro: R$ 180 com 1 aula normal e 1 Ashtanga por semana.",
   },
   {
     q: "Como funciona o Mensal Sopro?",
-    a: "Por R$ 180 no mês, você usa 4 aulas (segundas) à sua escolha mais entra em todas as quartas (Ashtanga) sem limite. Vence em 35 dias após a compra.",
+    a: "Por R$ 180, você pode reservar 1 aula normal e 1 Ashtanga por semana. As vagas da semana não acumulam e o plano vence 35 dias após a compra.",
   },
   {
     q: "As aulas têm muitas pessoas?",
