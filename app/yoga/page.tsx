@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Aulas de Yoga em Erechim/RS — Sopro",
     description:
-      "Pequenos grupos, presença antes de performance. Mensal Sopro com 4 aulas + passe livre nas quartas-feiras (Ashtanga).",
+      "Pequenos grupos, presença antes de performance. Mensal Sopro com 1 aula normal + 1 Ashtanga por semana.",
     url: "https://gabyarbter.com.br/yoga",
     images: [
       {
@@ -40,8 +40,7 @@ export const metadata: Metadata = {
 const URL_CADASTRO_SOPRO = "https://gabyarbter.com.br/sopro/cadastro";
 const URL_WHATSAPP = "https://wa.me/message/E6RZKY2Y72LEB1";
 
-// Pacotes — confirmar com a Gaby se quer manter esse esquema de desconto
-// (1 aula avulsa, e descontos progressivos em 5 e 10).
+// Ofertas disponíveis no app Sopro.
 type Pacote = {
   tipo: "avulsa" | "pacote" | "mensal";
   label: string;
@@ -55,41 +54,16 @@ type Pacote = {
 
 const PACOTES: Pacote[] = [
   { tipo: "avulsa", label: "Aula avulsa",   total: 40, aulas: 1, porAula: 40 },
-  { tipo: "pacote", label: "Pacote 10 aulas", total: 320, aulas: 10, porAula: 32 },
+  { tipo: "pacote", label: "Pacote de 4 aulas", total: 140, aulas: 4, porAula: 35 },
   {
     tipo: "mensal",
     label: "Mensal Sopro",
     total: 180,
-    bonus: "4 aulas + quartas ilimitadas · 35 dias",
+    bonus: "1 aula normal + 1 Ashtanga por semana · 35 dias",
     destaque: true,
     selo: "Mais escolhido",
   },
-];
-
-// Relatos — placeholder com nomes fictícios pra Gaby substituir
-// por depoimentos reais quando tiver autorização das alunas.
-const RELATOS = [
-  {
-    texto:
-      "Procurei muito uma yoga que não fosse aulinha apressada. Achei. Saio das aulas leve, sem pressa de voltar pro celular.",
-    nome: "Carolina",
-    tempo: "8 meses de prática",
-    iniciais: "CM",
-  },
-  {
-    texto:
-      "Comecei sem nunca ter feito yoga. A Gaby adapta cada postura, sem cobrança. Hoje pratico em casa também.",
-    nome: "Renata",
-    tempo: "1 ano de prática",
-    iniciais: "RS",
-  },
-  {
-    texto:
-      "Faço maquiagem com a Gaby e descobri o yoga aqui. Virou parte da minha rotina semanal — não imagino mais sem.",
-    nome: "Bianca",
-    tempo: "4 meses de prática",
-    iniciais: "BO",
-  },
+  { tipo: "pacote", label: "Pacote 10 aulas", total: 320, aulas: 10, porAula: 32 },
 ];
 
 export default function YogaPage() {
@@ -106,7 +80,6 @@ export default function YogaPage() {
       <Separador />
       <ComoEAula />
       <Separador />
-      <Relatos />
       <Pacotes />
       <ConviteSuave />
       <ComoAgendar />
@@ -272,55 +245,6 @@ function Feature({
   );
 }
 
-/* ============ RELATOS ============ */
-function Relatos() {
-  return (
-    <section className="px-6 py-16 bg-cream-soft border-y border-sand-deep/30">
-      <div className="max-w-md mx-auto">
-        <p className="text-[11px] uppercase tracking-[0.25em] text-sage-700 mb-3 text-center">
-          Quem pratica
-        </p>
-        <h2 className="font-serif text-4xl text-ink leading-[1.05] text-center">
-          Relatos
-        </h2>
-
-        <div className="mt-10 space-y-5">
-          {RELATOS.map((r, i) => (
-            <RelatoCard key={i} {...r} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function RelatoCard({
-  texto, nome, tempo, iniciais,
-}: {
-  texto: string;
-  nome: string;
-  tempo: string;
-  iniciais: string;
-}) {
-  return (
-    <article className="rounded-2xl bg-paper border border-sand-deep/40 p-6 shadow-[0_4px_18px_-12px_rgba(60,60,55,0.18)]">
-      <Quote aria-hidden className="size-5 text-terra-soft mb-3" />
-      <p className="font-serif italic text-ink text-[17px] leading-snug">
-        {texto}
-      </p>
-      <footer className="mt-5 flex items-center gap-3">
-        <div className="size-9 rounded-full bg-sage-100 text-sage-700 flex items-center justify-center text-[11px] font-medium tracking-wider">
-          {iniciais}
-        </div>
-        <div>
-          <p className="text-[13px] text-ink font-medium leading-tight">{nome}</p>
-          <p className="text-[11px] text-ink-mute mt-0.5">{tempo}</p>
-        </div>
-      </footer>
-    </article>
-  );
-}
-
 /* ============ PACOTES ============ */
 function Pacotes() {
   return (
@@ -345,7 +269,7 @@ function Pacotes() {
         <p className="mt-6 text-center text-[11px] text-ink-mute">
           Pacotes não expiram — você usa quando quiser.
           <br />
-          Mensal vale 35 dias e dá quartas livres.
+          Mensal vale 35 dias, com 1 aula normal e 1 Ashtanga por semana.
         </p>
       </div>
     </section>
@@ -456,7 +380,7 @@ function ComoAgendar() {
         <Step
           n={3}
           title="Reserva no horário que quiser"
-          desc="Vê a agenda da semana, escolhe o dia, faz check-in com 1 toque. Cancela até 2h antes que devolvemos o crédito."
+          desc="Vê a agenda da semana, escolhe o dia, faz check-in com 1 toque. Cancela até 1h antes que devolvemos o crédito."
         />
       </ol>
     </section>
