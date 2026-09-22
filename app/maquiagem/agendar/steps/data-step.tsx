@@ -22,6 +22,8 @@ function friendlyError(code: string): string {
       return "Esse dia está além da agenda aberta. Escolhe uma data mais próxima.";
     case "invalid_phone":
       return "Confere o número do WhatsApp — algo como (54) 9 9999-9999.";
+    case "voucher_used":
+      return "Esse voucher já foi usado nesse WhatsApp. Se quiser reservar mesmo assim, fala com a Gaby 🌸";
     case "slot_unavailable":
       return "Esse horário não está mais disponível. Escolhe outro, por favor.";
     default:
@@ -31,12 +33,16 @@ function friendlyError(code: string): string {
 
 export function DataStep({
   service,
+  originalPriceCents,
+  voucherCode,
   slot,
   state,
   update,
   onBack,
 }: {
   service: MakeService;
+  originalPriceCents: number;
+  voucherCode: string | null;
   slot: { startsIso: string; endsIso: string };
   state: AgendarState;
   update: (patch: Partial<AgendarState>) => void;
@@ -69,6 +75,7 @@ export function DataStep({
           startsAtIso: slot.startsIso,
           clientName: state.clientName.trim(),
           clientPhone: phone,
+          campaign: voucherCode,
         }),
       });
       const json = (await res.json()) as
@@ -113,6 +120,11 @@ export function DataStep({
         <div className="flex items-baseline justify-between gap-3">
           <p className="font-serif text-lg text-ink">{service.name}</p>
           <p className="font-serif text-lg text-sage-700">
+            {originalPriceCents > service.price_cents && (
+              <span className="mr-2 text-sm text-ink-soft line-through">
+                {formatBRL(originalPriceCents)}
+              </span>
+            )}
             {formatBRL(service.price_cents)}
           </p>
         </div>

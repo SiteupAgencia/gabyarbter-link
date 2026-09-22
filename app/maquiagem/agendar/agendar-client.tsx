@@ -8,6 +8,7 @@ import { ServiceStep } from "./steps/service-step";
 import { DateStep } from "./steps/date-step";
 import { TimeStep } from "./steps/time-step";
 import { DataStep } from "./steps/data-step";
+import { priceWithVoucher, type MakeVoucher } from "@/lib/make/pricing";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -22,14 +23,28 @@ export type AgendarState = {
 const STEP_LABELS = ["Serviço", "Data", "Horário", "Dados"] as const;
 
 export function AgendarClient({
-  services,
+  services: rawServices,
   settings,
   preselectedSlug,
+  voucher = null,
 }: {
   services: MakeService[];
   settings: MakeSettings;
   preselectedSlug: string | null;
+  voucher?: MakeVoucher | null;
 }) {
+  // Com voucher, o preço exibido já sai com desconto no serviço da campanha.
+  // O valor que vale é recalculado no checkout (servidor).
+  const services = useMemo(
+    () => rawServices.map((s) => ({ ...s, price_cents: priceWithVoucher(s, voucher) })),
+    [rawServices, voucher],
+  );
+  const originalPrice = useMemo(
+    () => new Map(rawServices.map((s) => [s.id, s.price_cents])),
+    [rawServices],
+  );
+  const voucherService = voucher ? rawServices.find((s) => s.slug === voucher.serviceSlug) : null;
+
   const preselected = preselectedSlug
     ? services.find((s) => s.slug === preselectedSlug) ?? null
     : null;
@@ -60,6 +75,18 @@ export function AgendarClient({
       <Header step={step} />
 
       <div className="flex-1 mx-auto w-full max-w-2xl px-5 pt-8 pb-28 sm:py-12">
+        {voucher && voucherService && (
+          <div className="mb-6 rounded-[1.25rem] bg-sand/40 hairline p-4 fade-up">
+            <p className="text-[11px] uppercase tracking-wider text-ink-soft">Presente · {voucher.name}</p>
+            <p className="font-serif text-xl text-sage-700 mt-1">
+              {voucher.discountPct}% na {voucherService.name}
+            </p>
+            <p className="text-sm text-ink-soft mt-1">
+              O desconto já está no valor. Você só reserva agora e paga no dia, com a Gaby.
+            </p>
+          </div>
+        )}
+
         {step === 1 && (
           <ServiceStep
             services={services}
@@ -101,6 +128,8 @@ export function AgendarClient({
         {step === 4 && state.service && state.slot && (
           <DataStep
             service={state.service}
+            originalPriceCents={originalPrice.get(state.service.id) ?? state.service.price_cents}
+            voucherCode={voucher && voucher.serviceSlug === state.service.slug ? voucher.code : null}
             slot={state.slot}
             state={state}
             update={update}

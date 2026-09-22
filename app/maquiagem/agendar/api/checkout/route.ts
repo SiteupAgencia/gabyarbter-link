@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getMakeServiceBySlug, getMakeSettings } from "@/lib/make/queries";
+import { getActiveMakeVoucher, getMakeServiceBySlug, getMakeSettings } from "@/lib/make/queries";
+import { voucherDiscountCents } from "@/lib/make/pricing";
 import { notifyGabyNewBooking } from "@/lib/make/notify";
 import { toE164 } from "@/lib/make/phone";
 
@@ -11,6 +12,7 @@ type Body = {
   startsAtIso?: string;
   clientName?: string;
   clientPhone?: string;
+  campaign?: string | null; // voucher de evento (make_campaigns)
 };
 
 // Sem cobrança online: a Gaby prefere receber no dia (PIX, dinheiro ou cartão).
@@ -51,6 +53,12 @@ export async function POST(req: Request) {
 
   const endsAt = new Date(startsAt.getTime() + service.duration_min * 60_000);
 
+  // Voucher: só vale ativo, no prazo e no serviço da campanha. Fora disso a
+  // reserva segue normal, sem desconto e sem vínculo.
+  const voucher = body.campaign ? await getActiveMakeVoucher(body.campaign) : null;
+  const applyVoucher = voucher && voucher.serviceSlug === service.slug ? voucher : null;
+  const discountCents = applyVoucher ? voucherDiscountCents(service.price_cents, applyVoucher.discountPct) : 0;
+
   let admin;
   try {
     admin = createAdminClient();
@@ -59,6 +67,19 @@ export async function POST(req: Request) {
       { ok: false, error: "supabase_not_configured" },
       { status: 500 },
     );
+  }
+
+  if (applyVoucher) {
+    // um uso por WhatsApp por campanha (reserva cancelada libera)
+    const { count } = await admin
+      .from("make_appointments")
+      .select("id", { count: "exact", head: true })
+      .eq("campaign", applyVoucher.code)
+      .eq("client_phone", clientPhone)
+      .in("status", ["pending_payment", "confirmed", "completed"]);
+    if ((count ?? 0) > 0) {
+      return NextResponse.json({ ok: false, error: "voucher_used" }, { status: 409 });
+    }
   }
 
   const { data: appt, error: insertError } = await admin
@@ -71,10 +92,11 @@ export async function POST(req: Request) {
       starts_at: startsAt.toISOString(),
       ends_at: endsAt.toISOString(),
       status: "pending_payment", // aguardando a Gaby confirmar
-      total_cents: service.price_cents,
+      total_cents: service.price_cents - discountCents,
       deposit_cents: 0, // nada pago online — recebe tudo no dia
       amount_cents: 0,
       payment_method: null,
+      ...(applyVoucher ? { campaign: applyVoucher.code, discount_cents: discountCents } : {}),
     })
     .select()
     .single();
