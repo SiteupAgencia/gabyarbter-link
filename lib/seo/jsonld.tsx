@@ -161,7 +161,7 @@ export const yogaStudio = {
       {
         "@type": "Offer",
         priceCurrency: "BRL",
-        price: "140.00",
+        price: "145.00",
         availability: "https://schema.org/InStock",
         itemOffered: {
           "@type": "Service",
@@ -246,7 +246,7 @@ export const yogaFaqs: FaqItem[] = [
   },
   {
     q: "Quanto custa a aula de yoga?",
-    a: "Aula avulsa: R$ 40. Pacote de 4 aulas: R$ 140 (R$ 35 por aula). Pacote de 10 aulas: R$ 320 (R$ 32 por aula). Mensal Sopro: R$ 180 com 1 aula normal e 1 Ashtanga por semana.",
+    a: "Aula avulsa: R$ 40. Pacote de 4 aulas: R$ 145 (R$ 36,25 por aula). Pacote de 10 aulas: R$ 320 (R$ 32 por aula). Mensal Sopro: R$ 180 com 1 aula normal e 1 Ashtanga por semana.",
   },
   {
     q: "Como funciona o Mensal Sopro?",
