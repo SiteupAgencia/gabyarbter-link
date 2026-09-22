@@ -54,7 +54,7 @@ type Pacote = {
 
 const PACOTES: Pacote[] = [
   { tipo: "avulsa", label: "Aula avulsa",   total: 40, aulas: 1, porAula: 40 },
-  { tipo: "pacote", label: "Pacote de 4 aulas", total: 140, aulas: 4, porAula: 35 },
+  { tipo: "pacote", label: "Pacote de 4 aulas", total: 145, aulas: 4, porAula: 36.25 },
   {
     tipo: "mensal",
     label: "Mensal Sopro",
@@ -278,6 +278,13 @@ function Pacotes() {
 
 function PacoteCard(p: Pacote) {
   const isMensal = p.tipo === "mensal";
+  const valorPorAula =
+    p.porAula !== undefined
+      ? p.porAula.toLocaleString("pt-BR", {
+          minimumFractionDigits: Number.isInteger(p.porAula) ? 0 : 2,
+          maximumFractionDigits: 2,
+        })
+      : undefined;
   const desconto =
     p.tipo === "pacote" && p.aulas && p.porAula
       ? Math.round((1 - p.total / (p.aulas * 40)) * 100)
@@ -315,7 +322,7 @@ function PacoteCard(p: Pacote) {
             {isMensal
               ? p.bonus
               : p.aulas && p.porAula
-              ? `R$ ${p.porAula} por aula`
+              ? `R$ ${valorPorAula} por aula`
               : ""}
           </p>
         </div>
