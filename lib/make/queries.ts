@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { MakeVoucher } from "./pricing";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type {
   MakeBlockedDate,
@@ -201,4 +202,29 @@ export async function getMakeRevenueAppointments(): Promise<MakeRevenueRow[]> {
       .order("starts_at", { ascending: false })
       .range(from, to),
   );
+}
+
+/** Campanha de voucher ativa e no prazo (só o servidor lê make_campaigns). */
+export async function getActiveMakeVoucher(code: string | null | undefined): Promise<MakeVoucher | null> {
+  const clean = (code ?? "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 32);
+  if (!clean) return null;
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return null;
+  }
+  const { data, error } = await admin
+    .from("make_campaigns")
+    .select("code, name, service_slug, discount_pct, expires_at, active")
+    .eq("code", clean)
+    .maybeSingle();
+  if (error || !data || !data.active) return null;
+  if (data.expires_at && new Date(data.expires_at).getTime() < Date.now()) return null;
+  return {
+    code: data.code,
+    name: data.name,
+    serviceSlug: data.service_slug,
+    discountPct: data.discount_pct,
+  };
 }

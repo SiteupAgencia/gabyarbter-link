@@ -40,7 +40,7 @@ export async function notifyGabyNewBooking(appointmentId: string): Promise<void>
 
     const { data: appt } = await admin
       .from("make_appointments")
-      .select("client_name, client_phone, starts_at, amount_cents, total_cents, deposit_cents, payment_method, service_id")
+      .select("client_name, client_phone, starts_at, amount_cents, total_cents, deposit_cents, payment_method, service_id, campaign, discount_cents")
       .eq("id", appointmentId)
       .single();
     if (!appt) {
@@ -66,6 +66,9 @@ export async function notifyGabyNewBooking(appointmentId: string): Promise<void>
       `${serviceName}`,
       `🗓️ ${when}`,
       `💰 ${formatBRL(totalCents)} · no dia`,
+      ...(appt.campaign
+        ? [`🎁 Voucher ${appt.campaign} · ${formatBRL(appt.discount_cents ?? 0)} de desconto já aplicado`]
+        : []),
       `📱 ${appt.client_phone}`,
       ``,
       `Confirme no painel pra avisar a ${firstName} automaticamente:`,

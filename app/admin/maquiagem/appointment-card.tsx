@@ -33,6 +33,8 @@ type AppointmentRow = {
   payment_method: string | null;
   notes: string | null;
   service_id: string;
+  campaign?: string | null;
+  discount_cents?: number | null;
 };
 
 /** "terça-feira, 24/06" — dia por extenso pro card de pedido (que vive fora da
@@ -172,6 +174,12 @@ export function AppointmentCard({
           </div>
           <p className="font-medium text-ink mt-1 truncate">{appt.client_name}</p>
           <p className="text-sm text-ink-soft mt-0.5">{serviceName}</p>
+          {appt.campaign && (
+            <p className="mt-1 inline-flex items-center rounded-full bg-sand/60 text-sage-700 text-[11px] font-medium px-2 py-0.5">
+              Voucher {appt.campaign}
+              {appt.discount_cents ? ` · −${formatBRL(appt.discount_cents)}` : ""}
+            </p>
+          )}
         </div>
         <div className="shrink-0 flex flex-col items-end gap-2">
           {canEditTime && (

@@ -23,7 +23,7 @@ export default async function MaquiagemAgendaPage() {
           total_cents, deposit_cents, amount_cents,
           final_paid_at, final_payment_method,
           payment_method, notes, service_id,
-          confirmed_at, source
+          confirmed_at, source, campaign, discount_cents
         `)
         .in("status", ["confirmed", "pending_payment", "completed"])
         .gte("starts_at", since)

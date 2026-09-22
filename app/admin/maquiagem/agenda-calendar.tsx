@@ -28,6 +28,8 @@ type Appt = {
   serviceName: string;
   confirmed_at: string | null;
   source: string;
+  campaign?: string | null;
+  discount_cents?: number | null;
 };
 type OneOff = {
   id: string;
